@@ -117,17 +117,27 @@ export default function AccountPage() {
       image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Das Bild konnte nicht gelesen werden.")); };
       image.src = url;
     });
-    const maxWidth = target === "banner" ? 1920 : target === "track" ? 1000 : 1600;
-    const maxHeight = target === "banner" ? 800 : target === "track" ? 1000 : 1600;
-    const scale = Math.min(1, maxWidth / source.naturalWidth, maxHeight / source.naturalHeight);
     const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
-    canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
+    const isProfileImage = target === "profile";
+    const maxWidth = target === "banner" ? 1920 : target === "track" ? 1000 : 1200;
+    const maxHeight = target === "banner" ? 800 : target === "track" ? 1000 : 1200;
+    const sourceCrop = isProfileImage ? Math.min(source.naturalWidth, source.naturalHeight) : null;
+    const scale = sourceCrop
+      ? Math.min(1, maxWidth / sourceCrop)
+      : Math.min(1, maxWidth / source.naturalWidth, maxHeight / source.naturalHeight);
+    canvas.width = sourceCrop ? Math.max(1, Math.round(sourceCrop * scale)) : Math.max(1, Math.round(source.naturalWidth * scale));
+    canvas.height = sourceCrop ? canvas.width : Math.max(1, Math.round(source.naturalHeight * scale));
     const context = canvas.getContext("2d");
     if (!context) throw new Error("Bildverarbeitung ist nicht verfügbar.");
     context.fillStyle = "#101116";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(source, 0, 0, canvas.width, canvas.height);
+    if (sourceCrop) {
+      const sourceX = Math.round((source.naturalWidth - sourceCrop) / 2);
+      const sourceY = Math.round((source.naturalHeight - sourceCrop) / 2);
+      context.drawImage(source, sourceX, sourceY, sourceCrop, sourceCrop, 0, 0, canvas.width, canvas.height);
+    } else {
+      context.drawImage(source, 0, 0, canvas.width, canvas.height);
+    }
     const toBlob = (quality: number) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
     let blob = await toBlob(0.84);
     if (blob && blob.size > 4_500_000) blob = await toBlob(0.65);
@@ -265,7 +275,7 @@ export default function AccountPage() {
     window.location.href = "/";
   }
 
-  const dropzone = (target: ImageTarget, label: string, path: string | null, ref: React.RefObject<HTMLInputElement | null>) => <div className="wide"><label>{label}</label><button className={`dropzone ${dragging === target ? "dragging" : ""}`} type="button" onClick={() => ref.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(target); }} onDragLeave={() => setDragging(null)} onDrop={(event) => dropImage(event, target)}>{path ? <img src={path} alt={`${label}-Vorschau`} /> : <span>Bild hierher ziehen oder klicken</span>}<small>{uploading === target ? "Wird verkleinert und hochgeladen …" : target === "banner" ? "JPG, PNG oder WebP · automatisch auf max. 1.920 × 800 px verkleinert" : "JPG, PNG oder WebP · automatisch auf max. 1.600 px verkleinert"}</small></button><input ref={ref} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, target); event.currentTarget.value = ""; }} /></div>;
+  const dropzone = (target: ImageTarget, label: string, path: string | null, ref: React.RefObject<HTMLInputElement | null>) => <div className="wide"><label>{label}</label><button className={`dropzone ${target === "profile" ? "profile-dropzone" : ""} ${dragging === target ? "dragging" : ""}`} type="button" onClick={() => ref.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(target); }} onDragLeave={() => setDragging(null)} onDrop={(event) => dropImage(event, target)}>{path ? <img src={path} alt={`${label}-Vorschau`} /> : <span>Bild hierher ziehen oder klicken</span>}<small>{uploading === target ? "Wird verkleinert und hochgeladen …" : target === "banner" ? "JPG, PNG oder WebP · automatisch auf max. 1.920 × 800 px verkleinert" : target === "profile" ? "JPG, PNG oder WebP · quadratisch zugeschnitten und auf max. 1.200 × 1.200 px verkleinert" : "JPG, PNG oder WebP · automatisch auf max. 1.600 px verkleinert"}</small></button><input ref={ref} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, target); event.currentTarget.value = ""; }} /></div>;
 
   return <main className="shell page account">
     <nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><span>{email}</span><button className="textbutton" onClick={signOut}>Abmelden</button></div></nav>
