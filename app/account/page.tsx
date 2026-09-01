@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { DragEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { ArtistTrack, TrackShelf } from "@/components/track-shelf";
 import { ChannelVideo, VideoShelf } from "@/components/video-shelf";
 import { getSupabase } from "@/lib/supabase";
 
@@ -19,9 +20,11 @@ type ArtistProfile = {
   suno_url: string | null;
   tiktok_url: string | null;
   facebook_url: string | null;
+  music_platforms: string[];
 };
 
-type ImageTarget = "profile" | "banner";
+type ImageTarget = "profile" | "banner" | "track";
+const platforms = ["Suno", "Udio", "Spotify", "YouTube", "YouTube Music", "SoundCloud", "Bandcamp", "Boomy", "AIVA", "Mubert", "Riffusion", "Andere"];
 
 function youtubeId(value: string) {
   try {
@@ -36,6 +39,7 @@ function youtubeId(value: string) {
 export default function AccountPage() {
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [videos, setVideos] = useState<ChannelVideo[]>([]);
+  const [tracks, setTracks] = useState<ArtistTrack[]>([]);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("Dein Profil wird geladen …");
   const [busy, setBusy] = useState(false);
@@ -44,12 +48,23 @@ export default function AccountPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [addingVideo, setAddingVideo] = useState(false);
+  const [trackPlatform, setTrackPlatform] = useState("");
+  const [trackTitle, setTrackTitle] = useState("");
+  const [trackUrl, setTrackUrl] = useState("");
+  const [trackCover, setTrackCover] = useState<string | null>(null);
+  const [addingTrack, setAddingTrack] = useState(false);
   const profileInput = useRef<HTMLInputElement>(null);
   const bannerInput = useRef<HTMLInputElement>(null);
+  const trackCoverInput = useRef<HTMLInputElement>(null);
 
   async function loadVideos(profileId: string) {
     const { data } = await getSupabase().from("artist_videos").select("id,youtube_id,youtube_url,title").eq("artist_profile_id", profileId).order("created_at", { ascending: false });
     setVideos(data ?? []);
+  }
+
+  async function loadTracks(profileId: string) {
+    const { data } = await getSupabase().from("artist_tracks").select("id,platform,title,track_url,cover_path").eq("artist_profile_id", profileId).order("created_at", { ascending: false }).limit(12);
+    setTracks(data ?? []);
   }
 
   useEffect(() => {
@@ -61,13 +76,14 @@ export default function AccountPage() {
         return;
       }
       setEmail(authData.user.email ?? "");
-      const { data, error } = await supabase.from("artist_profiles").select("id,slug,artist_name,tagline,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url").eq("user_id", authData.user.id).maybeSingle();
+      const { data, error } = await supabase.from("artist_profiles").select("id,slug,artist_name,tagline,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url,music_platforms").eq("user_id", authData.user.id).maybeSingle();
       if (error) setMessage(error.message);
       else if (!data) setMessage("Du hast noch keine Subdomain reserviert.");
       else {
         setProfile(data);
         setMessage("");
         void loadVideos(data.id);
+        void loadTracks(data.id);
       }
     }
     void load();
@@ -84,7 +100,7 @@ export default function AccountPage() {
     setMessage("");
     const { error } = await getSupabase().from("artist_profiles").update({
       artist_name: profile.artist_name, tagline: profile.tagline, bio: profile.bio, image_path: profile.image_path, banner_path: profile.banner_path,
-      accent_color: profile.accent_color, spotify_url: profile.spotify_url, youtube_url: profile.youtube_url, suno_url: profile.suno_url, tiktok_url: profile.tiktok_url, facebook_url: profile.facebook_url
+      accent_color: profile.accent_color, spotify_url: profile.spotify_url, youtube_url: profile.youtube_url, suno_url: profile.suno_url, tiktok_url: profile.tiktok_url, facebook_url: profile.facebook_url, music_platforms: profile.music_platforms
     }).eq("id", profile.id);
     setBusy(false);
     setMessage(error ? error.message : "Gespeichert. Dein Kanal wird nach der Freischaltung öffentlich sichtbar.");
@@ -100,8 +116,8 @@ export default function AccountPage() {
       image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Das Bild konnte nicht gelesen werden.")); };
       image.src = url;
     });
-    const maxWidth = target === "banner" ? 1920 : 1600;
-    const maxHeight = target === "banner" ? 800 : 1600;
+    const maxWidth = target === "banner" ? 1920 : target === "track" ? 1000 : 1600;
+    const maxHeight = target === "banner" ? 800 : target === "track" ? 1000 : 1600;
     const scale = Math.min(1, maxWidth / source.naturalWidth, maxHeight / source.naturalHeight);
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
@@ -182,6 +198,66 @@ export default function AccountPage() {
     else if (profile) void loadVideos(profile.id);
   }
 
+  async function uploadTrackCover(file: File) {
+    setUploading("track");
+    setMessage("");
+    try {
+      const supabase = getSupabase();
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) throw new Error("Bitte melde dich erneut an.");
+      const compressed = await compressImage(file, "track");
+      const path = `${authData.user.id}/tracks/${crypto.randomUUID()}.jpg`;
+      const { error } = await supabase.storage.from("artist-images").upload(path, compressed, { contentType: "image/jpeg", cacheControl: "3600" });
+      if (error) throw error;
+      const { data } = supabase.storage.from("artist-images").getPublicUrl(path);
+      setTrackCover(`${data.publicUrl}?v=${Date.now()}`);
+      setMessage("Cover hochgeladen und verkleinert.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Cover-Upload fehlgeschlagen.");
+    } finally {
+      setUploading(null);
+    }
+  }
+
+  async function addTrack() {
+    if (!profile) return;
+    if (!trackPlatform) {
+      setMessage("Wähle zuerst eine Musikplattform aus.");
+      return;
+    }
+    if (!trackTitle.trim() || !trackUrl.trim()) {
+      setMessage("Titel und Link sind erforderlich.");
+      return;
+    }
+    if (tracks.length >= 12) {
+      setMessage("Du hast bereits 12 Titel. Entferne zuerst einen Titel, bevor du einen neuen hinzufügst.");
+      return;
+    }
+    setAddingTrack(true);
+    try {
+      const supabase = getSupabase();
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) throw new Error("Bitte melde dich erneut an.");
+      const { error } = await supabase.from("artist_tracks").insert({ artist_profile_id: profile.id, user_id: authData.user.id, platform: trackPlatform, title: trackTitle.trim(), track_url: trackUrl.trim(), cover_path: trackCover });
+      if (error) throw error;
+      setTrackTitle("");
+      setTrackUrl("");
+      setTrackCover(null);
+      await loadTracks(profile.id);
+      setMessage("Titel hinzugefügt.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Titel konnte nicht gespeichert werden.");
+    } finally {
+      setAddingTrack(false);
+    }
+  }
+
+  async function deleteTrack(id: number) {
+    const { error } = await getSupabase().from("artist_tracks").delete().eq("id", id);
+    if (error) setMessage(error.message);
+    else if (profile) void loadTracks(profile.id);
+  }
+
   async function signOut() {
     await getSupabase().auth.signOut();
     window.location.href = "/";
@@ -200,6 +276,7 @@ export default function AccountPage() {
         <div><label htmlFor="artist">Künstlername</label><input id="artist" value={profile.artist_name ?? ""} onChange={(e) => update("artist_name", e.target.value)} /></div>
         <div><label htmlFor="tagline">Kurzer Satz</label><input id="tagline" value={profile.tagline ?? ""} onChange={(e) => update("tagline", e.target.value)} placeholder="Dein Sound in einem Satz" /></div>
         <div className="wide"><label htmlFor="bio">Bio</label><textarea id="bio" rows={5} value={profile.bio ?? ""} onChange={(e) => update("bio", e.target.value)} placeholder="Erzähl deine Geschichte, deinen Sound und was du machst." /></div>
+        <div className="wide"><label>Wo veröffentlichst du deine Musik?</label><div className="platform-picker">{platforms.map((platform) => <button type="button" key={platform} className={profile.music_platforms.includes(platform) ? "active" : ""} onClick={() => update("music_platforms", profile.music_platforms.includes(platform) ? profile.music_platforms.filter((item) => item !== platform) : [...profile.music_platforms, platform])}>{platform}</button>)}</div></div>
         <div><label htmlFor="color">Akzentfarbe</label><input id="color" type="color" value={profile.accent_color || "#d9ff3f"} onChange={(e) => update("accent_color", e.target.value)} /></div>
         <div><label htmlFor="spotify">Spotify-Link</label><input id="spotify" type="url" value={profile.spotify_url ?? ""} onChange={(e) => update("spotify_url", e.target.value)} placeholder="https://open.spotify.com/…" /></div>
         <div><label htmlFor="youtube">YouTube-Kanal-Link</label><input id="youtube" type="url" value={profile.youtube_url ?? ""} onChange={(e) => update("youtube_url", e.target.value)} placeholder="https://youtube.com/@…" /></div>
@@ -208,6 +285,7 @@ export default function AccountPage() {
         <div className="wide"><label htmlFor="facebook">Facebook-Link</label><input id="facebook" type="url" value={profile.facebook_url ?? ""} onChange={(e) => update("facebook_url", e.target.value)} placeholder="https://facebook.com/…" /></div>
       </div>
       <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/5</span></div><p>Füge bis zu fünf Videos ein. Beim sechsten wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo} onClick={addVideo}>{addingVideo ? "Wird hinzugefügt …" : "Video hinzufügen"}</button></div><VideoShelf videos={videos} editable onDelete={deleteVideo} /></section>
+      <section className="track-manager"><div className="section-title"><div><div className="eyebrow">Songs</div><h2>Deine Titel</h2></div><span>{tracks.length}/12</span></div><p>Lege Titel für die Plattformen an, die du oben ausgewählt hast. Ein Klick auf die Karte führt direkt zum Song.</p>{profile.music_platforms.length === 0 ? <p className="note">Wähle oben mindestens eine Musikplattform aus.</p> : <><div className="track-form"><select value={trackPlatform} onChange={(event) => setTrackPlatform(event.target.value)}><option value="">Plattform auswählen</option>{profile.music_platforms.map((platform) => <option key={platform} value={platform}>{platform}</option>)}</select><input value={trackTitle} onChange={(event) => setTrackTitle(event.target.value)} placeholder="Songtitel" /><input className="wide" value={trackUrl} onChange={(event) => setTrackUrl(event.target.value)} placeholder="Direkter Link zum Song" /><div className="wide"><label>Cover (optional)</label><button type="button" className={`dropzone track-cover-upload ${dragging === "track" ? "dragging" : ""}`} onClick={() => trackCoverInput.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging("track"); }} onDragLeave={() => setDragging(null)} onDrop={(event) => { event.preventDefault(); setDragging(null); const file = event.dataTransfer.files[0]; if (file) void uploadTrackCover(file); }}>{trackCover ? <img src={trackCover} alt="Cover-Vorschau" /> : <span>Cover hierher ziehen oder klicken</span>}<small>{uploading === "track" ? "Cover wird verkleinert …" : "JPG, PNG oder WebP · automatisch als quadratisches Cover verkleinert"}</small></button><input ref={trackCoverInput} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadTrackCover(file); event.currentTarget.value = ""; }} /></div></div><div className="track-add"><button type="button" disabled={addingTrack} onClick={addTrack}>{addingTrack ? "Wird hinzugefügt …" : "Titel hinzufügen"}</button></div></>}<TrackShelf tracks={tracks} editable onDelete={deleteTrack} /></section>
       <div className="savebar"><p className="note">{message}</p><button disabled={busy}>{busy ? "Speichert …" : "Änderungen speichern"}</button></div>
     </form>}
   </main>;
