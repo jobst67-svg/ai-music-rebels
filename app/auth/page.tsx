@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { getSupabase, hasSupabaseConfig } from "@/lib/supabase";
 
-const publicAuthUrl = "https://ai-music-rebels.vercel.app/auth";
+const publicSiteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://aimusicrebels.com").replace(/\/$/, "");
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"login" | "signup">("signup");
@@ -15,7 +15,7 @@ export default function AuthPage() {
 
   function redirectUrl() {
     const next = new URLSearchParams(window.location.search).get("next") || "/";
-    return `${publicAuthUrl}?next=${encodeURIComponent(next)}`;
+    return `${publicSiteUrl}/auth?next=${encodeURIComponent(next)}`;
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
