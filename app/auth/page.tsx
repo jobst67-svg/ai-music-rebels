@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { getSupabase, hasSupabaseConfig } from "@/lib/supabase";
 
 const publicSiteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://aimusicrebels.com").replace(/\/$/, "");
@@ -12,6 +12,25 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const next = new URLSearchParams(window.location.search).get("next") || "/";
+    const supabase = getSupabase();
+
+    const finishConfirmation = () => {
+      window.location.replace(next);
+    };
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) finishConfirmation();
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) finishConfirmation();
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   function redirectUrl() {
     const next = new URLSearchParams(window.location.search).get("next") || "/";
