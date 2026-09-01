@@ -53,6 +53,7 @@ export default function AccountPage() {
   const [trackUrl, setTrackUrl] = useState("");
   const [trackCover, setTrackCover] = useState<string | null>(null);
   const [addingTrack, setAddingTrack] = useState(false);
+  const [trackEditorOpen, setTrackEditorOpen] = useState(false);
   const profileInput = useRef<HTMLInputElement>(null);
   const bannerInput = useRef<HTMLInputElement>(null);
   const trackCoverInput = useRef<HTMLInputElement>(null);
@@ -243,6 +244,7 @@ export default function AccountPage() {
       setTrackTitle("");
       setTrackUrl("");
       setTrackCover(null);
+      setTrackEditorOpen(false);
       await loadTracks(profile.id);
       setMessage("Titel hinzugefügt.");
     } catch (error) {
@@ -285,8 +287,24 @@ export default function AccountPage() {
         <div className="wide"><label htmlFor="facebook">Facebook-Link</label><input id="facebook" type="url" value={profile.facebook_url ?? ""} onChange={(e) => update("facebook_url", e.target.value)} placeholder="https://facebook.com/…" /></div>
       </div>
       <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/5</span></div><p>Füge bis zu fünf Videos ein. Beim sechsten wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo} onClick={addVideo}>{addingVideo ? "Wird hinzugefügt …" : "Video hinzufügen"}</button></div><VideoShelf videos={videos} editable onDelete={deleteVideo} /></section>
-      <section className="track-manager"><div className="section-title"><div><div className="eyebrow">Songs</div><h2>Deine Titel</h2></div><span>{tracks.length}/12</span></div><p>Lege Titel für die Plattformen an, die du oben ausgewählt hast. Ein Klick auf die Karte führt direkt zum Song.</p>{profile.music_platforms.length === 0 ? <p className="note">Wähle oben mindestens eine Musikplattform aus.</p> : <><div className="track-form"><select value={trackPlatform} onChange={(event) => setTrackPlatform(event.target.value)}><option value="">Plattform auswählen</option>{profile.music_platforms.map((platform) => <option key={platform} value={platform}>{platform}</option>)}</select><input value={trackTitle} onChange={(event) => setTrackTitle(event.target.value)} placeholder="Songtitel" /><input className="wide" value={trackUrl} onChange={(event) => setTrackUrl(event.target.value)} placeholder="Direkter Link zum Song" /><div className="wide"><label>Cover (optional)</label><button type="button" className={`dropzone track-cover-upload ${dragging === "track" ? "dragging" : ""}`} onClick={() => trackCoverInput.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging("track"); }} onDragLeave={() => setDragging(null)} onDrop={(event) => { event.preventDefault(); setDragging(null); const file = event.dataTransfer.files[0]; if (file) void uploadTrackCover(file); }}>{trackCover ? <img src={trackCover} alt="Cover-Vorschau" /> : <span>Cover hierher ziehen oder klicken</span>}<small>{uploading === "track" ? "Cover wird verkleinert …" : "JPG, PNG oder WebP · automatisch als quadratisches Cover verkleinert"}</small></button><input ref={trackCoverInput} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadTrackCover(file); event.currentTarget.value = ""; }} /></div></div><div className="track-add"><button type="button" disabled={addingTrack} onClick={addTrack}>{addingTrack ? "Wird hinzugefügt …" : "Titel hinzufügen"}</button></div></>}<TrackShelf tracks={tracks} editable onDelete={deleteTrack} /></section>
-      <div className="savebar"><p className="note">{message}</p><button disabled={busy}>{busy ? "Speichert …" : "Änderungen speichern"}</button></div>
+      <section className="track-manager">
+        <div className="section-title"><div><div className="eyebrow">Songs</div><h2>Deine Titel</h2></div><span>{tracks.length}/12</span></div>
+        <p>Lege Titel für die Plattformen an, die du oben ausgewählt hast. Ein Klick auf die Karte führt direkt zum Song.</p>
+        {profile.music_platforms.length === 0 ? <p className="note">Wähle oben mindestens eine Musikplattform aus.</p> : <>
+          <button type="button" className="add-track-button" onClick={() => setTrackEditorOpen((open) => !open)}>{trackEditorOpen ? "Eingabe schließen" : "+ Neue Titelkarte"}</button>
+          {trackEditorOpen && <div className="track-editor">
+            <div className="track-form">
+              <select value={trackPlatform} onChange={(event) => setTrackPlatform(event.target.value)}><option value="">Plattform auswählen</option>{profile.music_platforms.map((platform) => <option key={platform} value={platform}>{platform}</option>)}</select>
+              <input value={trackTitle} onChange={(event) => setTrackTitle(event.target.value)} placeholder="Songtitel" />
+              <input className="wide" value={trackUrl} onChange={(event) => setTrackUrl(event.target.value)} placeholder="Direkter Link zum Song" />
+              <div className="wide"><label>Cover (optional)</label><button type="button" className={"dropzone track-cover-upload " + (dragging === "track" ? "dragging" : "")} onClick={() => trackCoverInput.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging("track"); }} onDragLeave={() => setDragging(null)} onDrop={(event) => { event.preventDefault(); setDragging(null); const file = event.dataTransfer.files[0]; if (file) void uploadTrackCover(file); }}>{trackCover ? <img src={trackCover} alt="Cover-Vorschau" /> : <span>Cover hierher ziehen oder klicken</span>}<small>{uploading === "track" ? "Cover wird verkleinert …" : "JPG, PNG oder WebP · automatisch auf max. 1.000 px verkleinert"}</small></button><input ref={trackCoverInput} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadTrackCover(file); event.currentTarget.value = ""; }} /></div>
+            </div>
+            <div className="track-add"><button type="button" disabled={addingTrack} onClick={addTrack}>{addingTrack ? "Wird hinzugefügt …" : "Titel hinzufügen"}</button></div>
+          </div>}
+        </>}
+        <TrackShelf tracks={tracks} editable onDelete={deleteTrack} />
+      </section>
+      <div className="savebar"><p className="note">{message}</p><div className="save-actions"><Link className="outline" href="/account/preview">Profil-Vorschau</Link><button disabled={busy}>{busy ? "Speichert …" : "Änderungen speichern"}</button></div></div>
     </form>}
   </main>;
 }
