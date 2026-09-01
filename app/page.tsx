@@ -78,7 +78,7 @@ export default function HomePage() {
         <div className="navlinks">
           <a href="#so-gehts">So geht&apos;s</a>
           <Link href="/artist/lunar-vein">Beispielprofil</Link>
-          <Link href="/auth">{email ? "Account" : "Anmelden"}</Link>
+          <Link href={email ? "/account" : "/auth"}>{email ? "Account" : "Anmelden"}</Link>
         </div>
       </nav>
 
