@@ -14,6 +14,7 @@ export default function HomePage() {
   const [email, setEmail] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const [winbackOptIn, setWinbackOptIn] = useState(false);
   const slug = useMemo(() => normalizeSlug(slugInput || artistName), [artistName, slugInput]);
 
   useEffect(() => {
@@ -54,16 +55,26 @@ export default function HomePage() {
         .single();
       if (reservationError) throw reservationError;
 
-      const { error: profileError } = await supabase.from("artist_profiles").insert({
+      const { data: profile, error: profileError } = await supabase.from("artist_profiles").insert({
         user_id: userData.user.id,
         reservation_id: reservation.id,
         slug,
         artist_name: artistName || slug,
-        is_published: false
-      });
+        is_published: false,
+        billing_status: "pending",
+        channel_mode: "full",
+        winback_opt_in: winbackOptIn
+      }).select("id").single();
       if (profileError) throw profileError;
-
-      setStatus("Reserviert. Nach der Zahlung schaltest du dein öffentliches Profil frei.");
+      const { data: sessionData } = await supabase.auth.getSession();
+      const checkout = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData.session?.access_token ?? ""}` },
+        body: JSON.stringify({ profileId: profile.id })
+      });
+      const result = await checkout.json() as { url?: string; error?: string };
+      if (!checkout.ok || !result.url) throw new Error(result.error || "Die Zahlungsseite konnte nicht geöffnet werden.");
+      window.location.assign(result.url);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Etwas ist schiefgelaufen. Bitte versuche es erneut.");
     } finally {
@@ -92,7 +103,7 @@ export default function HomePage() {
 
         <aside className="card">
           <h2>Deine Subdomain</h2>
-          <p>Für 9,99 € pro Jahr bekommst du deine persönliche Künstleradresse bei AI Music Rebels.</p>
+          <p>30 Tage gratis, danach 9,99 € pro Jahr. Die Zahlungsdaten hinterlegst du sicher bei Stripe; kündbar jederzeit über deinen Account.</p>
           <form className="form" onSubmit={reserve}>
             <div>
               <label htmlFor="artistName">Künstlername</label>
@@ -103,7 +114,8 @@ export default function HomePage() {
               <input id="slug" value={slugInput} onChange={(event) => setSlugInput(event.target.value)} placeholder={slug || "lunar-vein"} />
               <p className="note">{slug ? `${slug}.aimusicrebels.com` : "Wird aus deinem Künstlernamen erstellt"}</p>
             </div>
-            <button disabled={busy}>{busy ? "Wird reserviert …" : email ? "Adresse reservieren" : "Anmelden & reservieren"}</button>
+            <label className="consent"><input type="checkbox" checked={winbackOptIn} onChange={(event) => setWinbackOptIn(event.target.checked)} /> Ich möchte nach einem abgelaufenen Abo maximal monatlich eine Erinnerung zur Reaktivierung erhalten.</label>
+            <button disabled={busy}>{busy ? "Weiter zu Stripe …" : email ? "Zahlungsdaten hinterlegen & starten" : "Anmelden & starten"}</button>
             {status && <p className={status.startsWith("Reserviert") ? "note success" : "note error"}>{status}</p>}
           </form>
         </aside>
