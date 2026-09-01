@@ -57,3 +57,5 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .textbutton { background:transparent; color:#c5c7cb; font-weight:400; padding:0; }
 .empty { margin-top:28px; }
 @media (max-width:640px) { .editgrid { grid-template-columns:1fr; } .wide { grid-column:auto; } .editorhead,.savebar { align-items:flex-start; flex-direction:column; } }
+
+.secondary { background:transparent; color:#d9ff3f; border:1px solid #4b5130; }
