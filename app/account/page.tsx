@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { DragEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { ChannelVideo, VideoShelf } from "@/components/video-shelf";
 import { getSupabase } from "@/lib/supabase";
 
 type ArtistProfile = {
@@ -11,6 +12,7 @@ type ArtistProfile = {
   tagline: string | null;
   bio: string | null;
   image_path: string | null;
+  banner_path: string | null;
   accent_color: string | null;
   spotify_url: string | null;
   youtube_url: string | null;
@@ -19,14 +21,36 @@ type ArtistProfile = {
   facebook_url: string | null;
 };
 
+type ImageTarget = "profile" | "banner";
+
+function youtubeId(value: string) {
+  try {
+    const url = new URL(value.trim());
+    const id = url.hostname.includes("youtu.be") ? url.pathname.slice(1) : url.searchParams.get("v") || url.pathname.split("/").filter(Boolean).pop();
+    return id?.match(/^[A-Za-z0-9_-]{11}$/)?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default function AccountPage() {
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
+  const [videos, setVideos] = useState<ChannelVideo[]>([]);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("Dein Profil wird geladen …");
   const [busy, setBusy] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const imageInput = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState<ImageTarget | null>(null);
+  const [dragging, setDragging] = useState<ImageTarget | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoTitle, setVideoTitle] = useState("");
+  const [addingVideo, setAddingVideo] = useState(false);
+  const profileInput = useRef<HTMLInputElement>(null);
+  const bannerInput = useRef<HTMLInputElement>(null);
+
+  async function loadVideos(profileId: string) {
+    const { data } = await getSupabase().from("artist_videos").select("id,youtube_id,youtube_url,title").eq("artist_profile_id", profileId).order("created_at", { ascending: false });
+    setVideos(data ?? []);
+  }
 
   useEffect(() => {
     async function load() {
@@ -37,17 +61,16 @@ export default function AccountPage() {
         return;
       }
       setEmail(authData.user.email ?? "");
-      const { data, error } = await supabase
-        .from("artist_profiles")
-        .select("id,slug,artist_name,tagline,bio,image_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url")
-        .eq("user_id", authData.user.id)
-        .maybeSingle();
-
+      const { data, error } = await supabase.from("artist_profiles").select("id,slug,artist_name,tagline,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url").eq("user_id", authData.user.id).maybeSingle();
       if (error) setMessage(error.message);
       else if (!data) setMessage("Du hast noch keine Subdomain reserviert.");
-      else { setProfile(data); setMessage(""); }
+      else {
+        setProfile(data);
+        setMessage("");
+        void loadVideos(data.id);
+      }
     }
-    load();
+    void load();
   }, []);
 
   function update<K extends keyof ArtistProfile>(key: K, value: ArtistProfile[K]) {
@@ -59,46 +82,27 @@ export default function AccountPage() {
     if (!profile) return;
     setBusy(true);
     setMessage("");
-    const { error } = await getSupabase()
-      .from("artist_profiles")
-      .update({
-        artist_name: profile.artist_name,
-        tagline: profile.tagline,
-        bio: profile.bio,
-        image_path: profile.image_path,
-        accent_color: profile.accent_color,
-        spotify_url: profile.spotify_url,
-        youtube_url: profile.youtube_url,
-        suno_url: profile.suno_url,
-        tiktok_url: profile.tiktok_url,
-        facebook_url: profile.facebook_url
-      })
-      .eq("id", profile.id);
-
+    const { error } = await getSupabase().from("artist_profiles").update({
+      artist_name: profile.artist_name, tagline: profile.tagline, bio: profile.bio, image_path: profile.image_path, banner_path: profile.banner_path,
+      accent_color: profile.accent_color, spotify_url: profile.spotify_url, youtube_url: profile.youtube_url, suno_url: profile.suno_url, tiktok_url: profile.tiktok_url, facebook_url: profile.facebook_url
+    }).eq("id", profile.id);
     setBusy(false);
-    setMessage(error ? error.message : "Gespeichert. Dein Profil wird nach der Freischaltung öffentlich sichtbar.");
+    setMessage(error ? error.message : "Gespeichert. Dein Kanal wird nach der Freischaltung öffentlich sichtbar.");
   }
 
-  async function compressImage(file: File): Promise<File> {
+  async function compressImage(file: File, target: ImageTarget): Promise<File> {
     if (!file.type.startsWith("image/")) throw new Error("Bitte wähle eine Bilddatei.");
     if (file.size > 30 * 1024 * 1024) throw new Error("Das Bild ist größer als 30 MB.");
-
     const source = await new Promise<HTMLImageElement>((resolve, reject) => {
       const image = new Image();
       const url = URL.createObjectURL(file);
-      image.onload = () => {
-        URL.revokeObjectURL(url);
-        resolve(image);
-      };
-      image.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error("Das Bild konnte nicht gelesen werden."));
-      };
+      image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+      image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Das Bild konnte nicht gelesen werden.")); };
       image.src = url;
     });
-
-    const maximum = 1600;
-    const scale = Math.min(1, maximum / Math.max(source.naturalWidth, source.naturalHeight));
+    const maxWidth = target === "banner" ? 1920 : 1600;
+    const maxHeight = target === "banner" ? 800 : 1600;
+    const scale = Math.min(1, maxWidth / source.naturalWidth, maxHeight / source.naturalHeight);
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
     canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
@@ -107,49 +111,75 @@ export default function AccountPage() {
     context.fillStyle = "#101116";
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(source, 0, 0, canvas.width, canvas.height);
-
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.84));
+    const toBlob = (quality: number) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+    let blob = await toBlob(0.84);
+    if (blob && blob.size > 4_500_000) blob = await toBlob(0.65);
     if (!blob) throw new Error("Das Bild konnte nicht verkleinert werden.");
-    return new File([blob], "profile.jpg", { type: "image/jpeg" });
+    return new File([blob], `${target}.jpg`, { type: "image/jpeg" });
   }
 
-  async function uploadImage(file: File) {
+  async function uploadImage(file: File, target: ImageTarget) {
     if (!profile) return;
-    setUploading(true);
+    setUploading(target);
     setMessage("");
     try {
       const supabase = getSupabase();
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) throw new Error("Bitte melde dich erneut an.");
-      const compressed = await compressImage(file);
-      const path = `${authData.user.id}/profile.jpg`;
-      const { error: uploadError } = await supabase.storage.from("artist-images").upload(path, compressed, {
-        upsert: true,
-        contentType: "image/jpeg",
-        cacheControl: "3600"
-      });
+      const compressed = await compressImage(file, target);
+      const path = `${authData.user.id}/${target}.jpg`;
+      const { error: uploadError } = await supabase.storage.from("artist-images").upload(path, compressed, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabase.storage.from("artist-images").getPublicUrl(path);
+      const field = target === "banner" ? "banner_path" : "image_path";
       const imagePath = `${urlData.publicUrl}?v=${Date.now()}`;
-      const { error: profileError } = await supabase
-        .from("artist_profiles")
-        .update({ image_path: imagePath })
-        .eq("id", profile.id);
+      const { error: profileError } = await supabase.from("artist_profiles").update({ [field]: imagePath }).eq("id", profile.id);
       if (profileError) throw profileError;
-      update("image_path", imagePath);
-      setMessage("Bild hochgeladen und verkleinert gespeichert.");
+      update(field, imagePath);
+      setMessage(target === "banner" ? "Kanalbanner hochgeladen und verkleinert gespeichert." : "Kanalbild hochgeladen und verkleinert gespeichert.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Bild-Upload fehlgeschlagen.");
     } finally {
-      setUploading(false);
+      setUploading(null);
     }
   }
 
-  function dropImage(event: DragEvent<HTMLButtonElement>) {
+  function dropImage(event: DragEvent<HTMLButtonElement>, target: ImageTarget) {
     event.preventDefault();
-    setDragging(false);
+    setDragging(null);
     const file = event.dataTransfer.files[0];
-    if (file) void uploadImage(file);
+    if (file) void uploadImage(file, target);
+  }
+
+  async function addVideo() {
+    if (!profile) return;
+    const id = youtubeId(videoUrl);
+    if (!id) {
+      setMessage("Bitte füge einen gültigen YouTube-Link ein.");
+      return;
+    }
+    setAddingVideo(true);
+    try {
+      const supabase = getSupabase();
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) throw new Error("Bitte melde dich erneut an.");
+      const { error } = await supabase.from("artist_videos").insert({ artist_profile_id: profile.id, user_id: authData.user.id, youtube_url: videoUrl.trim(), youtube_id: id, title: videoTitle.trim() || null });
+      if (error) throw error;
+      setVideoUrl("");
+      setVideoTitle("");
+      await loadVideos(profile.id);
+      setMessage("Video hinzugefügt. Ab dem sechsten Video wird das älteste automatisch entfernt.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Video konnte nicht gespeichert werden.");
+    } finally {
+      setAddingVideo(false);
+    }
+  }
+
+  async function deleteVideo(id: number) {
+    const { error } = await getSupabase().from("artist_videos").delete().eq("id", id);
+    if (error) setMessage(error.message);
+    else if (profile) void loadVideos(profile.id);
   }
 
   async function signOut() {
@@ -157,42 +187,28 @@ export default function AccountPage() {
     window.location.href = "/";
   }
 
-  return (
-    <main className="shell page account">
-      <nav className="nav">
-        <Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link>
-        <div className="navlinks"><span>{email}</span><button className="textbutton" onClick={signOut}>Abmelden</button></div>
-      </nav>
-      <div className="eyebrow">Dein Künstlerbereich</div>
-      <h1>Profil gestalten.</h1>
-      {!profile ? <section className="card empty"><p>{message}</p><Link className="buttonlink" href="/">Subdomain sichern</Link></section> : (
-        <form className="card editor" onSubmit={save}>
-          <div className="editorhead">
-            <div><h2>{profile.slug}.aimusicrebels.com</h2><p>Deine Daten speichern wir sofort. Öffentlich wird die Seite erst nach Freischaltung.</p></div>
-            <Link className="outline" href="/account/preview">Vorschau</Link>
-          </div>
-          <div className="editgrid">
-            <div><label htmlFor="artist">Künstlername</label><input id="artist" value={profile.artist_name ?? ""} onChange={(e) => update("artist_name", e.target.value)} /></div>
-            <div><label htmlFor="tagline">Kurzer Satz</label><input id="tagline" value={profile.tagline ?? ""} onChange={(e) => update("tagline", e.target.value)} placeholder="Dein Sound in einem Satz" /></div>
-            <div className="wide"><label htmlFor="bio">Bio</label><textarea id="bio" rows={5} value={profile.bio ?? ""} onChange={(e) => update("bio", e.target.value)} placeholder="Erzähl deine Geschichte, deinen Sound und was du machst." /></div>
-            <div className="wide">
-              <label htmlFor="image">Profilbild</label>
-              <button className={`dropzone ${dragging ? "dragging" : ""}`} type="button" onClick={() => imageInput.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={dropImage}>
-                {profile.image_path ? <img src={profile.image_path} alt="Profilbild-Vorschau" /> : <span>Bild hierher ziehen oder klicken</span>}
-                <small>{uploading ? "Wird verkleinert und hochgeladen …" : "JPG, PNG oder WebP · automatisch auf max. 1.600 px verkleinert"}</small>
-              </button>
-              <input ref={imageInput} id="image" className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); event.currentTarget.value = ""; }} />
-            </div>
-            <div><label htmlFor="color">Akzentfarbe</label><input id="color" type="color" value={profile.accent_color || "#d9ff3f"} onChange={(e) => update("accent_color", e.target.value)} /></div>
-            <div><label htmlFor="spotify">Spotify-Link</label><input id="spotify" type="url" value={profile.spotify_url ?? ""} onChange={(e) => update("spotify_url", e.target.value)} placeholder="https://open.spotify.com/…" /></div>
-            <div><label htmlFor="youtube">YouTube-Link</label><input id="youtube" type="url" value={profile.youtube_url ?? ""} onChange={(e) => update("youtube_url", e.target.value)} placeholder="https://youtube.com/…" /></div>
-            <div><label htmlFor="suno">Suno-Link</label><input id="suno" type="url" value={profile.suno_url ?? ""} onChange={(e) => update("suno_url", e.target.value)} placeholder="https://suno.com/…" /></div>
-            <div><label htmlFor="tiktok">TikTok-Link</label><input id="tiktok" type="url" value={profile.tiktok_url ?? ""} onChange={(e) => update("tiktok_url", e.target.value)} placeholder="https://tiktok.com/@…" /></div>
-            <div className="wide"><label htmlFor="facebook">Facebook-Link</label><input id="facebook" type="url" value={profile.facebook_url ?? ""} onChange={(e) => update("facebook_url", e.target.value)} placeholder="https://facebook.com/…" /></div>
-          </div>
-          <div className="savebar"><p className="note">{message}</p><button disabled={busy}>{busy ? "Speichert …" : "Änderungen speichern"}</button></div>
-        </form>
-      )}
-    </main>
-  );
+  const dropzone = (target: ImageTarget, label: string, path: string | null, ref: React.RefObject<HTMLInputElement | null>) => <div className="wide"><label>{label}</label><button className={`dropzone ${dragging === target ? "dragging" : ""}`} type="button" onClick={() => ref.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(target); }} onDragLeave={() => setDragging(null)} onDrop={(event) => dropImage(event, target)}>{path ? <img src={path} alt={`${label}-Vorschau`} /> : <span>Bild hierher ziehen oder klicken</span>}<small>{uploading === target ? "Wird verkleinert und hochgeladen …" : target === "banner" ? "JPG, PNG oder WebP · automatisch auf max. 1.920 × 800 px verkleinert" : "JPG, PNG oder WebP · automatisch auf max. 1.600 px verkleinert"}</small></button><input ref={ref} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, target); event.currentTarget.value = ""; }} /></div>;
+
+  return <main className="shell page account">
+    <nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><span>{email}</span><button className="textbutton" onClick={signOut}>Abmelden</button></div></nav>
+    <div className="eyebrow">Dein Künstlerbereich</div><h1>Profil gestalten.</h1>
+    {!profile ? <section className="card empty"><p>{message}</p><Link className="buttonlink" href="/">Subdomain sichern</Link></section> : <form className="card editor" onSubmit={save}>
+      <div className="editorhead"><div><h2>{profile.slug}.aimusicrebels.com</h2><p>Deine Daten speichern wir sofort. Öffentlich wird die Seite erst nach Freischaltung.</p></div><Link className="outline" href="/account/preview">Vorschau</Link></div>
+      <div className="editgrid">
+        {dropzone("banner", "Kanalbanner", profile.banner_path, bannerInput)}
+        {dropzone("profile", "Kanalbild", profile.image_path, profileInput)}
+        <div><label htmlFor="artist">Künstlername</label><input id="artist" value={profile.artist_name ?? ""} onChange={(e) => update("artist_name", e.target.value)} /></div>
+        <div><label htmlFor="tagline">Kurzer Satz</label><input id="tagline" value={profile.tagline ?? ""} onChange={(e) => update("tagline", e.target.value)} placeholder="Dein Sound in einem Satz" /></div>
+        <div className="wide"><label htmlFor="bio">Bio</label><textarea id="bio" rows={5} value={profile.bio ?? ""} onChange={(e) => update("bio", e.target.value)} placeholder="Erzähl deine Geschichte, deinen Sound und was du machst." /></div>
+        <div><label htmlFor="color">Akzentfarbe</label><input id="color" type="color" value={profile.accent_color || "#d9ff3f"} onChange={(e) => update("accent_color", e.target.value)} /></div>
+        <div><label htmlFor="spotify">Spotify-Link</label><input id="spotify" type="url" value={profile.spotify_url ?? ""} onChange={(e) => update("spotify_url", e.target.value)} placeholder="https://open.spotify.com/…" /></div>
+        <div><label htmlFor="youtube">YouTube-Kanal-Link</label><input id="youtube" type="url" value={profile.youtube_url ?? ""} onChange={(e) => update("youtube_url", e.target.value)} placeholder="https://youtube.com/@…" /></div>
+        <div><label htmlFor="suno">Suno-Link</label><input id="suno" type="url" value={profile.suno_url ?? ""} onChange={(e) => update("suno_url", e.target.value)} placeholder="https://suno.com/…" /></div>
+        <div><label htmlFor="tiktok">TikTok-Link</label><input id="tiktok" type="url" value={profile.tiktok_url ?? ""} onChange={(e) => update("tiktok_url", e.target.value)} placeholder="https://tiktok.com/@…" /></div>
+        <div className="wide"><label htmlFor="facebook">Facebook-Link</label><input id="facebook" type="url" value={profile.facebook_url ?? ""} onChange={(e) => update("facebook_url", e.target.value)} placeholder="https://facebook.com/…" /></div>
+      </div>
+      <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/5</span></div><p>Füge bis zu fünf Videos ein. Beim sechsten wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo} onClick={addVideo}>{addingVideo ? "Wird hinzugefügt …" : "Video hinzufügen"}</button></div><VideoShelf videos={videos} editable onDelete={deleteVideo} /></section>
+      <div className="savebar"><p className="note">{message}</p><button disabled={busy}>{busy ? "Speichert …" : "Änderungen speichern"}</button></div>
+    </form>}
+  </main>;
 }
