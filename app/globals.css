@@ -43,3 +43,17 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .switch button { background:#2a2d34; color:white; padding:9px 12px; }
 .switch button.active { background:var(--lime); color:#111; }
 @media (max-width:760px) { .shell { width:min(100% - 28px, 1160px); } .hero { grid-template-columns:1fr; padding-top:30px; } .navlinks { gap:12px; font-size:12px; } .profile-head { align-items:flex-start; flex-direction:column; gap:16px; } }
+
+.account { max-width:920px; }
+.account > h1 { font-size:clamp(46px,7vw,76px); margin-top:12px; }
+.editor { margin-top:28px; }
+.editorhead { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:26px; }
+.editorhead h2 { font-size:23px; margin:0 0 8px; }
+.outline, .buttonlink { display:inline-block; border:1px solid #444955; color:#f6f4ef; padding:11px 14px; border-radius:10px; font-weight:700; font-size:13px; }
+.buttonlink { background:var(--lime); color:#111; border:0; margin-top:12px; }
+.editgrid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+.wide { grid-column:1 / -1; }
+.savebar { display:flex; align-items:center; justify-content:space-between; gap:16px; border-top:1px solid var(--line); margin-top:28px; padding-top:20px; }
+.textbutton { background:transparent; color:#c5c7cb; font-weight:400; padding:0; }
+.empty { margin-top:28px; }
+@media (max-width:640px) { .editgrid { grid-template-columns:1fr; } .wide { grid-column:auto; } .editorhead,.savebar { align-items:flex-start; flex-direction:column; } }
