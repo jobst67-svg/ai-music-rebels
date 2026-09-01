@@ -92,4 +92,24 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .video-manager > p { color:var(--muted); font-size:14px; }
 .video-form { display:grid; grid-template-columns:1.4fr 1fr auto; gap:10px; margin:16px 0 24px; }
 .video-form button { white-space:nowrap; }
+.platform-picker { display:flex; flex-wrap:wrap; gap:8px; }
+.platform-picker button { padding:9px 12px; background:#24272e; color:#d7d8db; font-size:12px; }
+.platform-picker button.active { background:var(--lime); color:#111; }
+.track-manager { margin-top:38px; padding-top:4px; }
+.track-manager > p { color:var(--muted); font-size:14px; }
+.track-form { display:grid; grid-template-columns:1fr 1.1fr; gap:10px; margin:16px 0; }
+.track-form .wide { grid-column:1 / -1; }
+.track-cover-upload { min-height:126px; }
+.track-cover-upload img { height:124px; }
+.track-add { display:flex; justify-content:flex-end; margin-top:12px; }
+.track-shelf { margin-top:44px; }
+.track-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; }
+.track-card { min-width:0; }
+.track-cover { position:relative; aspect-ratio:1; overflow:hidden; border-radius:13px; display:grid; place-items:center; background:linear-gradient(135deg,#343c1e,#141517); color:var(--lime); font-size:38px; }
+.track-cover img { width:100%; height:100%; object-fit:cover; }
+.track-cover i { opacity:0; position:absolute; inset:0; display:grid; place-items:center; background:#0008; color:white; font-style:normal; font-size:26px; transition:.18s; }
+.track-cover:hover i { opacity:1; }
+.track-title { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:9px; font-size:14px; font-weight:700; }
+.track-card p { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin:5px 0; color:var(--muted); font-size:12px; }
 @media (max-width:760px) { .channel-head,.channel-content { padding-left:18px; padding-right:18px; } .channel-head { align-items:flex-start; flex-direction:column; margin-top:-48px; } .channel-avatar { width:108px; height:108px; } .video-grid { grid-template-columns:repeat(2,1fr); } .video-form { grid-template-columns:1fr; } }
+@media (max-width:760px) { .track-grid { grid-template-columns:repeat(2,1fr); } .track-form { grid-template-columns:1fr; } }
