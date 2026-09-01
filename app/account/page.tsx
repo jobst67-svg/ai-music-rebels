@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { DragEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 
 type ArtistProfile = {
@@ -24,6 +24,9 @@ export default function AccountPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("Dein Profil wird geladen …");
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const imageInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function load() {
@@ -76,6 +79,79 @@ export default function AccountPage() {
     setMessage(error ? error.message : "Gespeichert. Dein Profil wird nach der Freischaltung öffentlich sichtbar.");
   }
 
+  async function compressImage(file: File): Promise<File> {
+    if (!file.type.startsWith("image/")) throw new Error("Bitte wähle eine Bilddatei.");
+    if (file.size > 30 * 1024 * 1024) throw new Error("Das Bild ist größer als 30 MB.");
+
+    const source = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      const url = URL.createObjectURL(file);
+      image.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(image);
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Das Bild konnte nicht gelesen werden."));
+      };
+      image.src = url;
+    });
+
+    const maximum = 1600;
+    const scale = Math.min(1, maximum / Math.max(source.naturalWidth, source.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Bildverarbeitung ist nicht verfügbar.");
+    context.fillStyle = "#101116";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(source, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.84));
+    if (!blob) throw new Error("Das Bild konnte nicht verkleinert werden.");
+    return new File([blob], "profile.jpg", { type: "image/jpeg" });
+  }
+
+  async function uploadImage(file: File) {
+    if (!profile) return;
+    setUploading(true);
+    setMessage("");
+    try {
+      const supabase = getSupabase();
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) throw new Error("Bitte melde dich erneut an.");
+      const compressed = await compressImage(file);
+      const path = `${authData.user.id}/profile.jpg`;
+      const { error: uploadError } = await supabase.storage.from("artist-images").upload(path, compressed, {
+        upsert: true,
+        contentType: "image/jpeg",
+        cacheControl: "3600"
+      });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("artist-images").getPublicUrl(path);
+      const imagePath = `${urlData.publicUrl}?v=${Date.now()}`;
+      const { error: profileError } = await supabase
+        .from("artist_profiles")
+        .update({ image_path: imagePath })
+        .eq("id", profile.id);
+      if (profileError) throw profileError;
+      update("image_path", imagePath);
+      setMessage("Bild hochgeladen und verkleinert gespeichert.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Bild-Upload fehlgeschlagen.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function dropImage(event: DragEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    setDragging(false);
+    const file = event.dataTransfer.files[0];
+    if (file) void uploadImage(file);
+  }
+
   async function signOut() {
     await getSupabase().auth.signOut();
     window.location.href = "/";
@@ -93,13 +169,20 @@ export default function AccountPage() {
         <form className="card editor" onSubmit={save}>
           <div className="editorhead">
             <div><h2>{profile.slug}.aimusicrebels.com</h2><p>Deine Daten speichern wir sofort. Öffentlich wird die Seite erst nach Freischaltung.</p></div>
-            <Link className="outline" href={"/artist/" + profile.slug}>Vorschau</Link>
+            <Link className="outline" href="/account/preview">Vorschau</Link>
           </div>
           <div className="editgrid">
             <div><label htmlFor="artist">Künstlername</label><input id="artist" value={profile.artist_name ?? ""} onChange={(e) => update("artist_name", e.target.value)} /></div>
             <div><label htmlFor="tagline">Kurzer Satz</label><input id="tagline" value={profile.tagline ?? ""} onChange={(e) => update("tagline", e.target.value)} placeholder="Dein Sound in einem Satz" /></div>
             <div className="wide"><label htmlFor="bio">Bio</label><textarea id="bio" rows={5} value={profile.bio ?? ""} onChange={(e) => update("bio", e.target.value)} placeholder="Erzähl deine Geschichte, deinen Sound und was du machst." /></div>
-            <div><label htmlFor="image">Bild-Link</label><input id="image" type="url" value={profile.image_path ?? ""} onChange={(e) => update("image_path", e.target.value)} placeholder="https://…" /></div>
+            <div className="wide">
+              <label htmlFor="image">Profilbild</label>
+              <button className={`dropzone ${dragging ? "dragging" : ""}`} type="button" onClick={() => imageInput.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={dropImage}>
+                {profile.image_path ? <img src={profile.image_path} alt="Profilbild-Vorschau" /> : <span>Bild hierher ziehen oder klicken</span>}
+                <small>{uploading ? "Wird verkleinert und hochgeladen …" : "JPG, PNG oder WebP · automatisch auf max. 1.600 px verkleinert"}</small>
+              </button>
+              <input ref={imageInput} id="image" className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); event.currentTarget.value = ""; }} />
+            </div>
             <div><label htmlFor="color">Akzentfarbe</label><input id="color" type="color" value={profile.accent_color || "#d9ff3f"} onChange={(e) => update("accent_color", e.target.value)} /></div>
             <div><label htmlFor="spotify">Spotify-Link</label><input id="spotify" type="url" value={profile.spotify_url ?? ""} onChange={(e) => update("spotify_url", e.target.value)} placeholder="https://open.spotify.com/…" /></div>
             <div><label htmlFor="youtube">YouTube-Link</label><input id="youtube" type="url" value={profile.youtube_url ?? ""} onChange={(e) => update("youtube_url", e.target.value)} placeholder="https://youtube.com/…" /></div>
