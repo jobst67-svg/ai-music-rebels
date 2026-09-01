@@ -21,6 +21,10 @@ type ArtistProfile = {
   tiktok_url: string | null;
   facebook_url: string | null;
   music_platforms: string[];
+  channel_mode: "full" | "basic";
+  billing_status: "pending" | "trialing" | "active" | "past_due" | "basic" | "cancelled";
+  stripe_customer_id: string | null;
+  winback_opt_in: boolean;
 };
 
 type ImageTarget = "profile" | "banner" | "track";
@@ -54,6 +58,7 @@ export default function AccountPage() {
   const [trackCover, setTrackCover] = useState<string | null>(null);
   const [addingTrack, setAddingTrack] = useState(false);
   const [trackEditorOpen, setTrackEditorOpen] = useState(false);
+  const [billingBusy, setBillingBusy] = useState(false);
   const profileInput = useRef<HTMLInputElement>(null);
   const bannerInput = useRef<HTMLInputElement>(null);
   const trackCoverInput = useRef<HTMLInputElement>(null);
@@ -77,12 +82,13 @@ export default function AccountPage() {
         return;
       }
       setEmail(authData.user.email ?? "");
-      const { data, error } = await supabase.from("artist_profiles").select("id,slug,artist_name,tagline,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url,music_platforms").eq("user_id", authData.user.id).maybeSingle();
+      const { data, error } = await supabase.from("artist_profiles").select("id,slug,artist_name,tagline,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url,music_platforms,channel_mode,billing_status,stripe_customer_id,winback_opt_in").eq("user_id", authData.user.id).maybeSingle();
       if (error) setMessage(error.message);
       else if (!data) setMessage("Du hast noch keine Subdomain reserviert.");
       else {
         setProfile(data);
-        setMessage("");
+        const checkout = new URLSearchParams(window.location.search).get("checkout");
+        setMessage(checkout === "success" ? "Zahlungsdaten gespeichert. Dein kostenloser Monat läuft jetzt." : checkout === "cancelled" ? "Die Zahlung wurde abgebrochen. Du kannst sie jederzeit erneut starten." : "");
         void loadVideos(data.id);
         void loadTracks(data.id);
       }
@@ -101,7 +107,7 @@ export default function AccountPage() {
     setMessage("");
     const { error } = await getSupabase().from("artist_profiles").update({
       artist_name: profile.artist_name, tagline: profile.tagline, bio: profile.bio, image_path: profile.image_path, banner_path: profile.banner_path,
-      accent_color: profile.accent_color, spotify_url: profile.spotify_url, youtube_url: profile.youtube_url, suno_url: profile.suno_url, tiktok_url: profile.tiktok_url, facebook_url: profile.facebook_url, music_platforms: profile.music_platforms
+      accent_color: profile.accent_color, spotify_url: profile.spotify_url, youtube_url: profile.youtube_url, suno_url: profile.suno_url, tiktok_url: profile.tiktok_url, facebook_url: profile.facebook_url, music_platforms: profile.music_platforms, winback_opt_in: profile.winback_opt_in
     }).eq("id", profile.id);
     setBusy(false);
     setMessage(error ? error.message : "Gespeichert. Dein Kanal wird nach der Freischaltung öffentlich sichtbar.");
@@ -275,6 +281,23 @@ export default function AccountPage() {
     window.location.href = "/";
   }
 
+  async function openBilling(kind: "checkout" | "portal") {
+    if (!profile) return;
+    setBillingBusy(true);
+    setMessage("");
+    try {
+      const supabase = getSupabase();
+      const { data } = await supabase.auth.getSession();
+      const response = await fetch(`/api/billing/${kind}`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token ?? ""}` }, body: JSON.stringify({ profileId: profile.id }) });
+      const result = await response.json() as { url?: string; error?: string };
+      if (!response.ok || !result.url) throw new Error(result.error || "Aboverwaltung konnte nicht geöffnet werden.");
+      window.location.assign(result.url);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Aboverwaltung konnte nicht geöffnet werden.");
+      setBillingBusy(false);
+    }
+  }
+
   const dropzone = (target: ImageTarget, label: string, path: string | null, ref: React.RefObject<HTMLInputElement | null>) => <div className="wide"><label>{label}</label><button className={`dropzone ${target === "profile" ? "profile-dropzone" : ""} ${dragging === target ? "dragging" : ""}`} type="button" onClick={() => ref.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(target); }} onDragLeave={() => setDragging(null)} onDrop={(event) => dropImage(event, target)}>{path ? <img src={path} alt={`${label}-Vorschau`} /> : <span>Bild hierher ziehen oder klicken</span>}<small>{uploading === target ? "Wird verkleinert und hochgeladen …" : target === "banner" ? "JPG, PNG oder WebP · automatisch auf max. 1.920 × 800 px verkleinert" : target === "profile" ? "JPG, PNG oder WebP · quadratisch zugeschnitten und auf max. 1.200 × 1.200 px verkleinert" : "JPG, PNG oder WebP · automatisch auf max. 1.600 px verkleinert"}</small></button><input ref={ref} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, target); event.currentTarget.value = ""; }} /></div>;
 
   return <main className="shell page account">
@@ -282,6 +305,7 @@ export default function AccountPage() {
     <div className="eyebrow">Dein Künstlerbereich</div><h1>Profil gestalten.</h1>
     {!profile ? <section className="card empty"><p>{message}</p><Link className="buttonlink" href="/">Subdomain sichern</Link></section> : <form className="card editor" onSubmit={save}>
       <div className="editorhead"><div><h2>{profile.slug}.aimusicrebels.com</h2><p>Deine Daten speichern wir sofort. Öffentlich wird die Seite erst nach Freischaltung.</p></div><Link className="outline" href="/account/preview">Vorschau</Link></div>
+      <section className="billing-card"><div><div className="eyebrow">Kanalzugang</div><h2>{profile.channel_mode === "basic" ? "Basisprofil" : profile.billing_status === "trialing" ? "Kostenloser Monat aktiv" : "Vollzugriff"}</h2><p>{profile.channel_mode === "basic" ? "Banner, Bio und Links bleiben sichtbar. Deine Titel und Videos warten gespeichert auf die Reaktivierung." : "Titel, Videos und interne Vorschauen sind freigeschaltet."}</p></div><div className="billing-actions">{profile.channel_mode === "basic" || profile.billing_status === "pending" ? <button type="button" disabled={billingBusy} onClick={() => void openBilling("checkout")}>{billingBusy ? "Öffnet …" : "Kanal aktivieren"}</button> : profile.stripe_customer_id ? <button type="button" className="secondary" disabled={billingBusy} onClick={() => void openBilling("portal")}>{billingBusy ? "Öffnet …" : "Abo verwalten"}</button> : null}</div></section>
       <div className="editgrid">
         {dropzone("banner", "Kanalbanner", profile.banner_path, bannerInput)}
         {dropzone("profile", "Kanalbild", profile.image_path, profileInput)}
@@ -295,6 +319,7 @@ export default function AccountPage() {
         <div><label htmlFor="suno">Suno-Link</label><input id="suno" type="url" value={profile.suno_url ?? ""} onChange={(e) => update("suno_url", e.target.value)} placeholder="https://suno.com/…" /></div>
         <div><label htmlFor="tiktok">TikTok-Link</label><input id="tiktok" type="url" value={profile.tiktok_url ?? ""} onChange={(e) => update("tiktok_url", e.target.value)} placeholder="https://tiktok.com/@…" /></div>
         <div className="wide"><label htmlFor="facebook">Facebook-Link</label><input id="facebook" type="url" value={profile.facebook_url ?? ""} onChange={(e) => update("facebook_url", e.target.value)} placeholder="https://facebook.com/…" /></div>
+        <label className="wide consent"><input type="checkbox" checked={profile.winback_opt_in} onChange={(event) => update("winback_opt_in", event.target.checked)} /> Nach einem abgelaufenen Abo darf AI Music Rebels mir maximal monatlich eine Erinnerung zur Reaktivierung schicken.</label>
       </div>
       <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/5</span></div><p>Füge bis zu fünf Videos ein. Beim sechsten wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo} onClick={addVideo}>{addingVideo ? "Wird hinzugefügt …" : "Video hinzufügen"}</button></div><VideoShelf videos={videos} editable onDelete={deleteVideo} /></section>
       <section className="track-manager">
