@@ -62,6 +62,9 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .dropzone { min-height:154px; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; overflow:hidden; border:1px dashed #596032; background:#121414; color:#c9cbd0; }
 .dropzone.dragging { border-color:var(--lime); background:#1d2111; }
 .dropzone img { width:100%; height:152px; object-fit:cover; }
+.profile-dropzone { align-items:flex-start; padding-left:16px; }
+.profile-dropzone img { width:152px; height:152px; aspect-ratio:1; border-radius:8px; }
+.profile-dropzone small { align-self:center; }
 .dropzone small { color:#a9ad9f; font-weight:400; padding:0 12px; text-align:center; }
 .fileinput { display:none; }
 .channel-page { max-width:1180px; }
