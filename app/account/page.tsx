@@ -326,7 +326,7 @@ export default function AccountPage() {
       <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/5</span></div><p>Füge bis zu fünf Videos ein. Beim sechsten wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo} onClick={addVideo}>{addingVideo ? "Wird hinzugefügt …" : "Video hinzufügen"}</button></div><VideoShelf videos={videos} editable onDelete={deleteVideo} /></section>
       <section className="track-manager">
         <div className="section-title"><div><div className="eyebrow">Songs</div><h2>Deine Titel</h2></div><span>{tracks.length}/12</span></div>
-        <p>Lege Titel für die Plattformen an, die du oben ausgewählt hast. Ein Klick auf die Karte führt direkt zum Song.</p>
+        <p>Lege Titel für die Plattformen an, die du oben ausgewählt hast. Spotify und SoundCloud spielen direkt auf deiner Künstlerseite. Für Bandcamp fügst du den offiziellen <em>EmbeddedPlayer</em>-Link aus dem Teilen-Menü ein. Ein Klick auf die Karte führt sonst direkt zum Song.</p>
         {profile.music_platforms.length === 0 ? <p className="note">Wähle oben mindestens eine Musikplattform aus.</p> : <>
           <button type="button" className="add-track-button" onClick={() => setTrackEditorOpen((open) => !open)}>{trackEditorOpen ? "Eingabe schließen" : "+ Neue Titelkarte"}</button>
           {trackEditorOpen && <div className="track-editor">
