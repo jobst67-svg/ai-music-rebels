@@ -10,6 +10,10 @@ export async function GET(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const admin = getBillingAdmin();
   const now = new Date();
+  const { data: expiredTrials } = await admin.from("artist_profiles").select("id").eq("billing_status", "trialing").lt("trial_ends_at", now.toISOString()).limit(100);
+  if (expiredTrials && expiredTrials.length > 0) {
+    await admin.from("artist_profiles").update({ billing_status: "basic", channel_mode: "basic" }).in("id", expiredTrials.map((profile) => profile.id));
+  }
   const inEightDays = new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000).toISOString();
   const inSevenDays = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: trials, error } = await admin.from("artist_profiles").select("id,user_id,artist_name,trial_ends_at").eq("billing_status", "trialing").is("trial_reminder_sent_at", null).gte("trial_ends_at", inSevenDays).lte("trial_ends_at", inEightDays).limit(100);
