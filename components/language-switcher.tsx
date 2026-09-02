@@ -138,6 +138,11 @@ const deToEn: Record<string, string> = {
   "Reaktivierungs-Mail": "Reactivation email",
   "Noch kein Künstlerprofil bzw. kein Abo vorhanden.": "No artist profile or subscription yet.",
   "Independent AI music artist": "Independent AI music artist"
+  ,"Gratisprofil": "Free profile"
+  ,"Premiumprofil": "Premium profile"
+  ,"Nur der kostenlose Profil-Ausschnitt wird angezeigt.": "Only the free profile excerpt is shown."
+  ,"Vollständiges Premiumprofil": "Full premium profile"
+  ,"Das Premiumprofil ist für diesen Kanal noch nicht freigeschaltet.": "The premium profile is not enabled for this channel yet."
 };
 
 const enToDe = Object.fromEntries(Object.entries(deToEn).map(([de, en]) => [en, de]));
