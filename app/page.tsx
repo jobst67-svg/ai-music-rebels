@@ -130,7 +130,7 @@ export default function HomePage() {
       <section className="hero">
         <div>
           <div className="eyebrow">{english ? "AI Music · Your rebel stage" : "AI Music · Deine Bühne für die Rebellion"}</div>
-          <h1 className="hero-title">{(english ? ["Break the rules.", "Claim your sound.", "Join the rebellion."] : ["Spreng die Regeln.", "Zeig deinen Sound.", "Werde Teil der Rebellion."]).map((line) => <span key={line} style={{ display: "block", whiteSpace: "nowrap" }}>{line}</span>)}</h1>
+          <h1 className="hero-title">{(english ? ["Break the rules.", "Claim your sound.", "Join the rebellion."] : ["Spreng die Regeln.", "Zeig deinen Sound.", "Werde Teil der Rebellion."]).map((line, index) => <span className={index === 2 ? "hero-accent" : undefined} key={line} style={{ display: "block", whiteSpace: "nowrap" }}>{line}</span>)}</h1>
           <p className="lead">{english ? "No boxes. No gatekeepers. Claim your own artist page, build your identity and put your music where people can find it." : "Keine Schubladen. Keine Gatekeeper. Sichere dir deine eigene Künstlerseite, bau deine Identität auf und zeig der Welt deine Musik."}</p>
           <div id="so-gehts" className="steps"><span>{english ? "01 Claim your name" : "01 Namen sichern"}</span><span>{english ? "02 Build your profile" : "02 Profil aufbauen"}</span><span>{english ? "03 Drop your music" : "03 Musik raushauen"}</span></div>
         </div>
