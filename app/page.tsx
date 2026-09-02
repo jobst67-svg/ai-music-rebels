@@ -128,7 +128,7 @@ export default function HomePage() {
       <nav className="nav">
         <Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link>
         <div className="navlinks">
-          <a href="#so-gehts">{english ? "How it works" : "So geht&apos;s"}</a>
+          <a href="#so-gehts">{english ? "How it works" : "So geht's"}</a>
           <a href="https://voitto-tai-kooma.aimusicrebels.com">{english ? "Example profile" : "Beispielprofil"}</a>
           <Link href={email ? "/account" : "/auth"}>{email ? "Account" : english ? "Sign in" : "Anmelden"}</Link>
           <LanguageSwitcher />
