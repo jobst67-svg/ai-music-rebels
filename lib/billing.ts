@@ -31,6 +31,13 @@ export async function getRequestUser(request: Request) {
   return error ? null : data.user;
 }
 
+/** Server-side admin allow-list. Never rely on a client-side email check for this. */
+export function isAdminUser(user: { email?: string | null } | null) {
+  const configured = process.env.ADMIN_EMAILS ?? "jobst67@gmail.com";
+  const allowedEmails = configured.split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
+  return Boolean(user?.email && allowedEmails.includes(user.email.toLowerCase()));
+}
+
 export function statusFromStripe(status: string): BillingStatus {
   if (status === "trialing") return "trialing";
   if (status === "active") return "active";
