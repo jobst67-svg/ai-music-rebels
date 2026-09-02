@@ -48,6 +48,10 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .switch { display:flex; gap:8px; margin-bottom:18px; }
 .switch button { background:#2a2d34; color:white; padding:9px 12px; }
 .switch button.active { background:var(--lime); color:#111; }
+.profile-view-switch { display:flex; flex-wrap:wrap; gap:8px; margin:6px 38px 0; padding-top:18px; border-top:1px solid var(--line); }
+.profile-view-switch button { background:#2a2d34; color:#f6f4ef; padding:10px 14px; border:1px solid #3a3e47; }
+.profile-view-switch button.active { background:var(--lime); color:#111; border-color:var(--lime); }
+.profile-view-note { margin:10px 38px 0; color:var(--muted); font-size:13px; }
 @media (max-width:760px) { .shell { width:min(100% - 28px, 1160px); } .hero { grid-template-columns:1fr; padding-top:30px; } .navlinks { gap:12px; font-size:12px; } .profile-head { align-items:flex-start; flex-direction:column; gap:16px; } }
 
 .account { max-width:920px; }
@@ -135,6 +139,7 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .track-title { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:9px; font-size:14px; font-weight:700; }
 .track-card p { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin:5px 0; color:var(--muted); font-size:12px; }
 @media (max-width:760px) { .channel-head,.channel-content { padding-left:18px; padding-right:18px; } .channel-head { align-items:flex-start; flex-direction:column; margin-top:-48px; } .channel-avatar { width:108px; height:108px; } .video-grid { grid-template-columns:repeat(2,1fr); } .video-form { grid-template-columns:1fr; } }
+@media (max-width:760px) { .profile-view-switch { margin-left:18px; margin-right:18px; } .profile-view-note { margin-left:18px; margin-right:18px; } }
 @media (max-width:760px) { .track-grid { grid-template-columns:repeat(2,1fr); } .track-form { grid-template-columns:1fr; } .save-actions { width:100%; flex-direction:column; align-items:stretch; } .save-actions .outline,.save-actions button { text-align:center; width:100%; } }
 
 .site-footer { display:flex; align-items:center; justify-content:space-between; gap:16px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; padding:24px 0 36px; }
