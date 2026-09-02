@@ -8,6 +8,12 @@ function normalizeSlug(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 32);
 }
 
+function readableError(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error && typeof error.message === "string") return error.message;
+  return "Etwas ist schiefgelaufen. Bitte versuche es erneut.";
+}
+
 export default function HomePage() {
   const [artistName, setArtistName] = useState("");
   const [slugInput, setSlugInput] = useState("");
@@ -96,7 +102,8 @@ export default function HomePage() {
       if (profileError) throw profileError;
       await openCheckout(profile.id);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Etwas ist schiefgelaufen. Bitte versuche es erneut.");
+      console.error("[reservation] failed", error);
+      setStatus(readableError(error));
     } finally {
       setBusy(false);
     }
