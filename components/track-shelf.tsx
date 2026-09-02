@@ -37,7 +37,7 @@ function embedForTrack(track: ArtistTrack): EmbeddedTrack | null {
   return null;
 }
 
-export function TrackShelf({ tracks, editable = false, onDelete }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void }) {
+export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = true }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; showPlayer?: boolean }) {
   const embeddedTracks = useMemo(() => tracks.map(embedForTrack).filter((track): track is EmbeddedTrack => Boolean(track)), [tracks]);
   const [activeId, setActiveId] = useState<number | null>(embeddedTracks[0]?.id ?? null);
   const activeTrack = embeddedTracks.find((track) => track.id === activeId) ?? embeddedTracks[0];
@@ -45,7 +45,7 @@ export function TrackShelf({ tracks, editable = false, onDelete }: { tracks: Art
 
   return <section className="track-shelf">
     <div className="section-title"><div><div className="eyebrow">Songs</div><h2>Ausgewählte Titel</h2></div><span>{tracks.length}</span></div>
-    {activeTrack && <div className={`music-player ${activeTrack.kind}`}>
+    {showPlayer && activeTrack && <div className={`music-player ${activeTrack.kind}`}>
       <iframe src={activeTrack.embedUrl} title={`${activeTrack.title} ${activeTrack.platform} player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
     </div>}
     <div className="track-grid">
