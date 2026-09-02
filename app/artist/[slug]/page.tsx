@@ -44,7 +44,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
     image_path: null, banner_path: null, accent_color: "#d9ff3f", spotify_url: null, youtube_url: null, suno_url: null, tiktok_url: null, facebook_url: null, channel_mode: "full"
   } satisfies ArtistProfile : null);
 
-  if (!profile) return <main className="shell page"><nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link></nav><section className="profile"><div className="eyebrow">404</div><h1>Profil nicht gefunden.</h1><p className="lead">Diese Künstlerseite ist noch nicht veröffentlicht oder existiert nicht.</p></section></main>;
+  if (!profile) return <main className="shell page"><nav className="nav"><Link className="brand" href="https://aimusicrebels.com">AI MUSIC <em>REBELS</em></Link></nav><section className="profile"><div className="eyebrow">404</div><h1>Profil nicht gefunden.</h1><p className="lead">Diese Künstlerseite ist noch nicht veröffentlicht oder existiert nicht.</p></section></main>;
 
   const showPremiumContent = profile.channel_mode === "full";
   const [videos, tracks] = profile.id === "demo" || !showPremiumContent ? [[], []] : await Promise.all([
@@ -55,7 +55,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const links = [["Spotify", profile.spotify_url], ["YouTube", profile.youtube_url], ["Suno", profile.suno_url], ["TikTok", profile.tiktok_url], ["Facebook", profile.facebook_url]].filter((entry): entry is [string, string] => Boolean(entry[1]));
 
   return <main className="shell page channel-page">
-    <nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><Link href="/auth">Account</Link></div></nav>
+    <nav className="nav"><Link className="brand" href="https://aimusicrebels.com">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><Link href="https://aimusicrebels.com/auth">Account</Link></div></nav>
     <article className="channel">
       <div className="channel-banner" style={{ background: profile.banner_path ? undefined : `linear-gradient(120deg, ${profile.accent_color || "#d9ff3f"}, #151a11 45%, #101116)` }}>{profile.banner_path && <img src={profile.banner_path} alt={`${name} Kanalbanner`} />}</div>
       <header className="channel-head"><div className="channel-avatar" style={{ background: `linear-gradient(135deg, ${profile.accent_color || "#d9ff3f"}, #30372c)` }}>{profile.image_path ? <img src={profile.image_path} alt={name} /> : name.slice(0, 1)}</div><div><div className="eyebrow">AI Music Rebel</div><h1>{name}</h1><p className="tagline">{profile.tagline || "Independent AI music artist"}</p></div></header>
