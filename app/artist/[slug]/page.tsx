@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArtistTrack, TrackShelf } from "@/components/track-shelf";
-import { ChannelVideo, VideoShelf } from "@/components/video-shelf";
+import { ArtistTrack } from "@/components/track-shelf";
+import { ChannelVideo } from "@/components/video-shelf";
+import { PublicProfile } from "@/components/public-profile";
 import { supabaseKey, supabaseUrl } from "@/lib/supabase";
 
 type ArtistProfile = {
@@ -59,7 +60,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
     <article className="channel">
       <div className="channel-banner" style={{ background: profile.banner_path ? undefined : `linear-gradient(120deg, ${profile.accent_color || "#d9ff3f"}, #151a11 45%, #101116)` }}>{profile.banner_path && <img src={profile.banner_path} alt={`${name} Kanalbanner`} />}</div>
       <header className="channel-head"><div className="channel-avatar" style={{ background: `linear-gradient(135deg, ${profile.accent_color || "#d9ff3f"}, #30372c)` }}>{profile.image_path ? <img src={profile.image_path} alt={name} /> : name.slice(0, 1)}</div><div><div className="eyebrow">AI Music Rebel</div><h1>{name}</h1><p className="tagline">{profile.tagline || "Independent AI music artist"}</p></div></header>
-      <div className="channel-content"><p className="bio">{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p>{links.length > 0 && <div className="links">{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer">{label} ↗</a>)}</div>}{showPremiumContent && <><TrackShelf tracks={tracks} /><VideoShelf videos={videos} /></>}</div>
+      <PublicProfile profile={profile} name={name} links={links} tracks={tracks} videos={videos} />
     </article>
   </main>;
 }
