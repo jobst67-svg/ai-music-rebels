@@ -71,8 +71,9 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
     <div className="track-grid">
       {tracks.map((track) => {
         const embedded = embedForTrack(track);
+        const canPlay = showPlayer && Boolean(embedded);
         return <article className="track-card" key={track.id}>
-        {embedded ? <button type="button" onClick={() => setActiveId(track.id)} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={`${track.title} abspielen`}>
+        {canPlay ? <button type="button" onClick={() => setActiveId(track.id)} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={`${track.title} abspielen`}>
           {track.cover_path || spotifyCovers[track.id] ? <img src={track.cover_path || spotifyCovers[track.id]} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
           <i>▶</i>
         </button> : <a href={track.track_url} target="_blank" rel="noreferrer" className="track-cover">
