@@ -55,6 +55,17 @@ const deToEn: Record<string, string> = {
   "Beispielprofil": "Example profile",
   "Anmelden": "Sign in",
   "Abmelden": "Sign out",
+  "Registrieren": "Sign up",
+  "Werde ein Rebel.": "Become a Rebel.",
+  "Willkommen zurück.": "Welcome back.",
+  "Ein Account für deine Subdomain und dein öffentliches Künstlerprofil.": "One account for your subdomain and public artist profile.",
+  "E-Mail": "Email",
+  "Passwort": "Password",
+  "Account anlegen": "Create account",
+  "Bestätigungsmail erneut senden": "Resend confirmation email",
+  "Bitte warten …": "Please wait …",
+  "Bitte bestätige jetzt deine E-Mail-Adresse. Danach kannst du deine Adresse reservieren.": "Please confirm your email address. You can then reserve your address.",
+  "Neue Bestätigungs-E-Mail wurde gesendet.": "A new confirmation email has been sent.",
   "Zurück zur Startseite": "Back to home",
   "Profil nicht gefunden.": "Profile not found.",
   "Diese Künstlerseite ist noch nicht veröffentlicht oder existiert nicht.": "This artist page is not published yet or does not exist.",
@@ -76,6 +87,8 @@ const deToEn: Record<string, string> = {
   "Facebook-Link": "Facebook link",
   "Dein Künstlerbereich": "Your artist area",
   "Profil gestalten.": "Shape your profile.",
+  "Du hast noch keine Subdomain reserviert.": "You have not reserved a subdomain yet.",
+  "Deine Daten speichern wir sofort. Öffentlich wird die Seite erst nach Freischaltung.": "Your details are saved immediately. The page only becomes public after activation.",
   "Subdomain sichern": "Claim subdomain",
   "Vorschau": "Preview",
   "Profil-Vorschau": "Profile preview",
@@ -86,6 +99,7 @@ const deToEn: Record<string, string> = {
   "Kostenloser Monat aktiv": "Free month active",
   "Vollzugriff": "Full access",
   "Kanal aktivieren": "Activate channel",
+  "Öffnet …": "Opening …",
   "Abo verwalten": "Manage subscription",
   "Titel, Videos und interne Vorschauen sind freigeschaltet.": "Tracks, videos and internal previews are unlocked.",
   "Banner, Bio und Links bleiben sichtbar. Deine Titel und Videos warten gespeichert auf die Reaktivierung.": "Banner, bio and links remain visible. Your tracks and videos stay stored until reactivation.",
@@ -122,7 +136,8 @@ const deToEn: Record<string, string> = {
   "Plattformen": "Platforms",
   "Testmonat endet": "Trial ends",
   "Reaktivierungs-Mail": "Reactivation email",
-  "Noch kein Künstlerprofil bzw. kein Abo vorhanden.": "No artist profile or subscription yet."
+  "Noch kein Künstlerprofil bzw. kein Abo vorhanden.": "No artist profile or subscription yet.",
+  "Independent AI music artist": "Independent AI music artist"
 };
 
 const enToDe = Object.fromEntries(Object.entries(deToEn).map(([de, en]) => [en, de]));
