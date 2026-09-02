@@ -5,6 +5,8 @@ import { DragEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { ArtistTrack, TrackShelf } from "@/components/track-shelf";
 import { ChannelVideo, VideoShelf } from "@/components/video-shelf";
 import { getSupabase } from "@/lib/supabase";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { SiteFooter } from "@/components/site-footer";
 
 type ArtistProfile = {
   id: string;
@@ -301,7 +303,7 @@ export default function AccountPage() {
   const dropzone = (target: ImageTarget, label: string, path: string | null, ref: React.RefObject<HTMLInputElement | null>) => <div className={target === "profile" ? "profile-field" : "wide"}><label>{label}</label><button className={`dropzone ${target === "profile" ? "profile-dropzone" : ""} ${dragging === target ? "dragging" : ""}`} type="button" onClick={() => ref.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(target); }} onDragLeave={() => setDragging(null)} onDrop={(event) => dropImage(event, target)}>{path ? <img src={path} alt={`${label}-Vorschau`} /> : <span>Bild hierher ziehen oder klicken</span>}<small>{uploading === target ? "Wird verkleinert und hochgeladen …" : target === "banner" ? "JPG, PNG oder WebP · automatisch auf max. 1.920 × 800 px verkleinert" : target === "profile" ? "JPG, PNG oder WebP · quadratisch zugeschnitten und auf max. 1.200 × 1.200 px verkleinert" : "JPG, PNG oder WebP · automatisch auf max. 1.600 px verkleinert"}</small></button><input ref={ref} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, target); event.currentTarget.value = ""; }} /></div>;
 
   return <main className="shell page account">
-    <nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><span>{email}</span><button className="textbutton" onClick={signOut}>Abmelden</button></div></nav>
+    <nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><span>{email}</span>{email.toLowerCase() === "jobst67@gmail.com" && <Link href="/admin">Admin</Link>}<LanguageSwitcher /><button className="textbutton" onClick={signOut}>Abmelden</button></div></nav>
     <div className="eyebrow">Dein Künstlerbereich</div><h1>Profil gestalten.</h1>
     {!profile ? <section className="card empty"><p>{message}</p><Link className="buttonlink" href="/">Subdomain sichern</Link></section> : <form className="card editor" onSubmit={save}>
       <div className="editorhead"><div><h2>{profile.slug}.aimusicrebels.com</h2><p>Deine Daten speichern wir sofort. Öffentlich wird die Seite erst nach Freischaltung.</p></div><Link className="outline" href="/account/preview">Vorschau</Link></div>
@@ -341,5 +343,6 @@ export default function AccountPage() {
       </section>
       <div className="savebar"><p className="note">{message}</p><div className="save-actions"><Link className="outline" href="/account/preview">Profil-Vorschau</Link><button disabled={busy}>{busy ? "Speichert …" : "Änderungen speichern"}</button></div></div>
     </form>}
+    <SiteFooter />
   </main>;
 }
