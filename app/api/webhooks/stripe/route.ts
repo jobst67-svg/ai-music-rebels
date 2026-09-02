@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { getBillingAdmin, isFullChannel, statusFromStripe } from "@/lib/billing";
-import { sendBillingEmail } from "@/lib/resend";
+import { sendAdminEmail, sendBillingEmail } from "@/lib/resend";
 import { getStripe } from "@/lib/stripe";
 
 function webhookSecret() {
@@ -64,6 +64,12 @@ export async function POST(request: Request) {
           preview: "Du kannst dein Abo jederzeit im Künstlerbereich verwalten.",
           idempotencyKey: `subscription-started-${subscription.id}`
         });
+        if (profile) await sendAdminEmail({
+          subject: "Neue Kanalaktivierung",
+          content: `${profile.artist_name || "Ein Nutzer"} hat den kostenlosen Monat für den Künstlerkanal ${profile.id} gestartet.`,
+          preview: "Automatische Admin-Benachrichtigung",
+          idempotencyKey: `admin-subscription-started-${subscription.id}`
+        });
       }
     }
     if (event.type === "customer.subscription.updated") await setSubscription(event.data.object as Stripe.Subscription);
@@ -75,6 +81,12 @@ export async function POST(request: Request) {
         content: "Dein Künstlerkanal läuft jetzt als Basisprofil weiter. Banner, Bio und Links bleiben sichtbar; deine Titel und Videos bleiben gespeichert und werden bei einer Reaktivierung sofort wieder angezeigt.",
         preview: "Du kannst deinen Kanal jederzeit im Künstlerbereich reaktivieren.",
         idempotencyKey: `subscription-cancelled-${subscription.id}`
+      });
+      if (profile) await sendAdminEmail({
+        subject: "Kanalabo beendet",
+        content: `${profile.artist_name || "Ein Nutzer"} hat das Abo für den Künstlerkanal ${profile.id} beendet. Das Profil läuft nun im Basisprofil weiter.`,
+        preview: "Automatische Admin-Benachrichtigung",
+        idempotencyKey: `admin-subscription-cancelled-${subscription.id}`
       });
     }
     if (event.type === "invoice.payment_failed") {
