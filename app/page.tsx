@@ -100,6 +100,16 @@ export default function HomePage() {
         winback_opt_in: winbackOptIn
       }).select("id").single();
       if (profileError) throw profileError;
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch("/api/notifications/registration", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData.session?.access_token ?? ""}` },
+          body: JSON.stringify({ profileId: profile.id })
+        });
+      } catch (notificationError) {
+        console.warn("[reservation] admin notification failed", notificationError);
+      }
       await openCheckout(profile.id);
     } catch (error) {
       console.error("[reservation] failed", error);
