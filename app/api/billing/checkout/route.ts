@@ -33,6 +33,11 @@ export async function POST(request: Request) {
     if (!session.url) throw new Error("Stripe konnte keine Zahlungsseite erzeugen.");
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Zahlung konnte nicht gestartet werden." }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Zahlung konnte nicht gestartet werden.";
+    console.error("[billing/checkout] failed", {
+      name: error instanceof Error ? error.name : "UnknownError",
+      message
+    });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
