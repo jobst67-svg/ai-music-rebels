@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type ArtistTrack = {
   id: number;
@@ -40,7 +40,27 @@ function embedForTrack(track: ArtistTrack): EmbeddedTrack | null {
 export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = true }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; showPlayer?: boolean }) {
   const embeddedTracks = useMemo(() => tracks.map(embedForTrack).filter((track): track is EmbeddedTrack => Boolean(track)), [tracks]);
   const [activeId, setActiveId] = useState<number | null>(embeddedTracks[0]?.id ?? null);
+  const [spotifyCovers, setSpotifyCovers] = useState<Record<number, string>>({});
   const activeTrack = embeddedTracks.find((track) => track.id === activeId) ?? embeddedTracks[0];
+  useEffect(() => {
+    let cancelled = false;
+    const missing = tracks.filter((track) => !track.cover_path && track.platform.toLowerCase() === "spotify");
+    if (missing.length === 0) return;
+    Promise.all(missing.map(async (track) => {
+      try {
+        const response = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(track.track_url)}`);
+        if (!response.ok) return null;
+        const data = await response.json() as { thumbnail_url?: string };
+        return data.thumbnail_url ? [track.id, data.thumbnail_url] as const : null;
+      } catch { return null; }
+    })).then((results) => {
+      if (cancelled) return;
+      const next: Record<number, string> = {};
+      results.forEach((result) => { if (result) next[result[0]] = result[1]; });
+      if (Object.keys(next).length > 0) setSpotifyCovers((current) => ({ ...current, ...next }));
+    });
+    return () => { cancelled = true; };
+  }, [tracks]);
   if (tracks.length === 0) return null;
 
   return <section className="track-shelf">
@@ -53,10 +73,10 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
         const embedded = embedForTrack(track);
         return <article className="track-card" key={track.id}>
         {embedded ? <button type="button" onClick={() => setActiveId(track.id)} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={`${track.title} abspielen`}>
-          {track.cover_path ? <img src={track.cover_path} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
+          {track.cover_path || spotifyCovers[track.id] ? <img src={track.cover_path || spotifyCovers[track.id]} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
           <i>▶</i>
         </button> : <a href={track.track_url} target="_blank" rel="noreferrer" className="track-cover">
-          {track.cover_path ? <img src={track.cover_path} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
+          {track.cover_path || spotifyCovers[track.id] ? <img src={track.cover_path || spotifyCovers[track.id]} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
           <i>↗</i>
         </a>}
         <a href={track.track_url} target="_blank" rel="noreferrer" className="track-title">{track.title}</a>
