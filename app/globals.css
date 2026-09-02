@@ -119,12 +119,19 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .track-editor { border:1px solid var(--line); border-radius:14px; padding:16px; background:#15171c; }
 .save-actions { display:flex; align-items:center; gap:10px; }
 .track-shelf { margin-top:44px; }
+.music-player { width:100%; min-height:152px; margin:0 0 20px; overflow:hidden; border:1px solid var(--line); border-radius:13px; background:#111216; }
+.music-player iframe { display:block; width:100%; height:152px; border:0; }
+.music-player.soundcloud { min-height:248px; }
+.music-player.soundcloud iframe { height:248px; }
+.music-player.bandcamp { min-height:120px; }
+.music-player.bandcamp iframe { height:120px; }
 .track-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; }
 .track-card { min-width:0; }
-.track-cover { position:relative; aspect-ratio:1; overflow:hidden; border-radius:13px; display:grid; place-items:center; background:linear-gradient(135deg,#343c1e,#141517); color:var(--lime); font-size:38px; }
+.track-cover { position:relative; aspect-ratio:1; overflow:hidden; border:0; padding:0; border-radius:13px; display:grid; place-items:center; background:linear-gradient(135deg,#343c1e,#141517); color:var(--lime); font-size:38px; }
 .track-cover img { width:100%; height:100%; object-fit:cover; }
 .track-cover i { opacity:0; position:absolute; inset:0; display:grid; place-items:center; background:#0008; color:white; font-style:normal; font-size:26px; transition:.18s; }
 .track-cover:hover i { opacity:1; }
+.track-cover.selected { outline:2px solid var(--lime); outline-offset:2px; }
 .track-title { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:9px; font-size:14px; font-weight:700; }
 .track-card p { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin:5px 0; color:var(--muted); font-size:12px; }
 @media (max-width:760px) { .channel-head,.channel-content { padding-left:18px; padding-right:18px; } .channel-head { align-items:flex-start; flex-direction:column; margin-top:-48px; } .channel-avatar { width:108px; height:108px; } .video-grid { grid-template-columns:repeat(2,1fr); } .video-form { grid-template-columns:1fr; } }
