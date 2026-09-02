@@ -129,10 +129,10 @@ export default function HomePage() {
 
       <section className="hero">
         <div>
-          <div className="eyebrow">AI Music · Your artist identity</div>
-          <h1>{english ? "Turn your idea into sound." : "Mach aus deiner Idee einen Klang."}</h1>
-          <p className="lead">{english ? "Your own artist page for music made with new tools. Image, bio, embedded player and essential platforms in one place." : "Deine eigene Künstlerseite für Musik, die mit neuen Werkzeugen entsteht. Mit Bild, Bio, eingebettetem Player und allen wichtigen Plattformen an einem Ort."}</p>
-          <div id="so-gehts" className="steps"><span>{english ? "01 Claim your name" : "01 Namen sichern"}</span><span>{english ? "02 Shape your profile" : "02 Profil gestalten"}</span><span>{english ? "03 Show your music" : "03 Musik zeigen"}</span></div>
+          <div className="eyebrow">{english ? "AI Music · Your rebel stage" : "AI Music · Deine Bühne für die Rebellion"}</div>
+          <h1>{english ? "Break the rules. Claim your sound." : "Spreng die Regeln. Zeig deinen Sound."}</h1>
+          <p className="lead">{english ? "No boxes. No gatekeepers. Claim your own artist page, build your identity and put your music where people can find it." : "Keine Schubladen. Keine Gatekeeper. Sichere dir deine eigene Künstlerseite, bau deine Identität auf und zeig der Welt deine Musik."}</p>
+          <div id="so-gehts" className="steps"><span>{english ? "01 Claim your name" : "01 Namen sichern"}</span><span>{english ? "02 Build your profile" : "02 Profil aufbauen"}</span><span>{english ? "03 Drop your music" : "03 Musik raushauen"}</span></div>
         </div>
 
         <aside className="card">
