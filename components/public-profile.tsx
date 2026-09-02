@@ -24,7 +24,7 @@ export function PublicProfile({ profile, name, links, tracks, videos }: {
 }) {
   const [view, setView] = useState<"free" | "premium">("free");
   const hasPremiumProfile = profile.channel_mode === "full";
-  const visibleTracks = view === "premium" ? tracks : [];
+  const visibleTracks = view === "premium" ? tracks : tracks.slice(0, 5);
   const visibleVideos = view === "premium" ? videos : [];
 
   return <>
@@ -35,6 +35,6 @@ export function PublicProfile({ profile, name, links, tracks, videos }: {
       </button>
     </div>
     {view === "free" ? <p className="profile-view-note">Nur der kostenlose Profil-Ausschnitt wird angezeigt.</p> : hasPremiumProfile ? <p className="profile-view-note">Vollständiges Premiumprofil</p> : <p className="profile-view-note">Das Premiumprofil ist für diesen Kanal noch nicht freigeschaltet.</p>}
-    <div className="channel-content"><p className="bio">{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p>{view === "free" ? links.length > 0 && <div className="free-link-grid">{links.slice(0, 5).map(([label, url]) => <a className="free-link-tile" key={label} href={url} target="_blank" rel="noreferrer"><strong>{label}</strong><span>↗</span></a>)}</div> : links.length > 0 && <div className="links">{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer">{label} ↗</a>)}</div>}{hasPremiumProfile && <><TrackShelf tracks={visibleTracks} /><VideoShelf videos={visibleVideos} /></>}</div>
+    <div className="channel-content"><p className="bio">{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p>{links.length > 0 && <div className="links">{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer">{label} ↗</a>)}</div>}{hasPremiumProfile && <><TrackShelf tracks={visibleTracks} showPlayer={view === "premium"} /><VideoShelf videos={visibleVideos} /></>}</div>
   </>;
 }
