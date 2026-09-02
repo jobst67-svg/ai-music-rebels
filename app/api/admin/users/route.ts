@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getBillingAdmin, getRequestUser, isAdminUser } from "@/lib/billing";
 import { getStripe } from "@/lib/stripe";
 
-const profileFields = "id,user_id,slug,artist_name,tagline,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url,music_platforms,billing_status,channel_mode,stripe_customer_id,stripe_subscription_id,trial_started_at,trial_ends_at,winback_opt_in,created_at,is_published";
+const profileFields = "id,user_id,slug,artist_name,tagline,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url,music_platforms,billing_status,channel_mode,stripe_customer_id,stripe_subscription_id,trial_started_at,trial_ends_at,winback_opt_in,created_at:updated_at,is_published";
 
 async function requireAdmin(request: Request) {
   const user = await getRequestUser(request);
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const admin = getBillingAdmin();
     const [usersResult, profilesResult] = await Promise.all([
       admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-      admin.from("artist_profiles").select(profileFields).order("created_at", { ascending: false })
+      admin.from("artist_profiles").select(profileFields).order("updated_at", { ascending: false })
     ]);
     if (usersResult.error) throw usersResult.error;
     if (profilesResult.error) throw profilesResult.error;
