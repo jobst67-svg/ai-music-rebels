@@ -3,6 +3,7 @@ import { ArtistTrack } from "@/components/track-shelf";
 import { ChannelVideo } from "@/components/video-shelf";
 import { PublicProfile } from "@/components/public-profile";
 import { supabaseKey, supabaseUrl } from "@/lib/supabase";
+import type { Metadata } from "next";
 
 type ArtistProfile = {
   id: string;
@@ -35,6 +36,22 @@ async function findArtist(slug: string) {
   return rows[0] ?? null;
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const profile = await findArtist(slug);
+  if (!profile) return { title: "Profil nicht gefunden | AI Music Rebels", robots: { index: false, follow: false } };
+  const name = profile.artist_name || profile.slug;
+  const description = profile.tagline || profile.bio || `Künstlerprofil von ${name} auf AI Music Rebels.`;
+  const canonical = `https://${profile.slug}.aimusicrebels.com`;
+  return {
+    title: `${name} – AI-Musik Künstlerprofil | AI Music Rebels`,
+    description,
+    alternates: { canonical },
+    openGraph: { title: `${name} – AI Music Rebels`, description, url: canonical, type: "profile", images: [{ url: `https://aimusicrebels.com/artist/${profile.slug}/opengraph-image`, width: 1200, height: 630, alt: `${name} Künstlerprofil` }] },
+    twitter: { card: "summary_large_image", title: `${name} – AI Music Rebels`, description, images: [`https://aimusicrebels.com/artist/${profile.slug}/opengraph-image`] }
+  };
+}
+
 export default async function ArtistPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const artist = await findArtist(slug);
@@ -55,7 +72,9 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const name = profile.artist_name || profile.slug;
   const links = [["Spotify", profile.spotify_url], ["YouTube", profile.youtube_url], ["Suno", profile.suno_url], ["TikTok", profile.tiktok_url], ["Facebook", profile.facebook_url]].filter((entry): entry is [string, string] => Boolean(entry[1]));
 
+  const structuredData = { "@context": "https://schema.org", "@type": "Person", name, description: profile.bio || profile.tagline || undefined, url: `https://${profile.slug}.aimusicrebels.com`, image: profile.image_path || undefined, sameAs: links.map(([, url]) => url), jobTitle: "Independent AI music artist" };
   return <main className="shell page channel-page">
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
     <nav className="nav"><Link className="brand" href="https://aimusicrebels.com">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><Link href="https://aimusicrebels.com/auth">Account</Link></div></nav>
     <article className="channel">
       <div className="channel-banner" style={{ background: profile.banner_path ? undefined : `linear-gradient(120deg, ${profile.accent_color || "#d9ff3f"}, #151a11 45%, #101116)` }}>{profile.banner_path && <img src={profile.banner_path} alt={`${name} Kanalbanner`} />}</div>
