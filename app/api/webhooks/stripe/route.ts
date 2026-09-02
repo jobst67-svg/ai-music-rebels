@@ -1,3 +1,4 @@
+ 1 file changed, 47 insertions(+), 15 deletions(-)
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { getBillingAdmin, isFullChannel, statusFromStripe } from "@/lib/billing";
@@ -10,13 +11,24 @@ function webhookSecret() {
   return secret;
 }
 
+type Profile = { id: string; user_id: string; artist_name: string | null };
+
+async function sendToProfile(profile: Profile, email: Omit<Parameters<typeof sendBillingEmail>[0], "to">) {
+  try {
+    const { data: auth } = await getBillingAdmin().auth.admin.getUserById(profile.user_id);
+    if (auth.user?.email) await sendBillingEmail({ ...email, to: auth.user.email });
+  } catch (error) {
+    console.error("[billing/email] failed", { profileId: profile.id, message: error instanceof Error ? error.message : "Unknown error" });
+  }
+}
+
 async function setSubscription(subscription: Stripe.Subscription) {
   const admin = getBillingAdmin();
   const profileId = subscription.metadata.artist_profile_id;
   const status = statusFromStripe(subscription.status);
   const query = profileId ? admin.from("artist_profiles").select("id,user_id,artist_name").eq("id", profileId) : admin.from("artist_profiles").select("id,user_id,artist_name").eq("stripe_subscription_id", subscription.id);
-  const { data: profile } = await query.maybeSingle();
-  if (!profile) return;
+  const { data: profile } = await query.maybeSingle<Profile>();
+  if (!profile) return null;
   const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
   await admin.from("artist_profiles").update({
     stripe_customer_id: customerId,
@@ -27,16 +39,7 @@ async function setSubscription(subscription: Stripe.Subscription) {
     trial_ends_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
   }).eq("id", profile.id);
 
-  if (!isFullChannel(status)) {
-    const { data: auth } = await admin.auth.admin.getUserById(profile.user_id);
-    if (auth.user?.email) await sendBillingEmail({
-      to: auth.user.email,
-      subject: "Dein Kanal ist jetzt im Basisprofil",
-      content: "Deine Inhalte bleiben gespeichert. Banner, Bio und Links sind weiterhin sichtbar. Reaktiviere dein Abo im Künstlerbereich, damit Titel und Videos sofort wieder erscheinen.",
-      preview: "Du kannst jederzeit in deinen Account zurückkehren und das Abo reaktivieren.",
-      idempotencyKey: `basic-profile-${subscription.id}`
-    });
-  }
+  return profile;
 }
 
 export async function POST(request: Request) {
@@ -51,14 +54,44 @@ export async function POST(request: Request) {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      if (typeof session.subscription === "string") await setSubscription(await getStripe().subscriptions.retrieve(session.subscription));
+      if (typeof session.subscription === "string") {
+        const subscription = await getStripe().subscriptions.retrieve(session.subscription);
+        const profile = await setSubscription(subscription);
+        if (profile) await sendToProfile(profile, {
+          subject: subscription.status === "trialing" ? "Dein kostenloser Monat startet jetzt" : "Dein Künstlerkanal ist aktiviert",
+          content: subscription.status === "trialing"
+            ? "Deine Zahlungsdaten sind gespeichert und dein Künstlerkanal ist jetzt für 30 Tage vollständig freigeschaltet. Vor Ablauf des kostenlosen Monats erinnern wir dich per E-Mail."
+            : "Deine Zahlungsdaten sind gespeichert und dein Künstlerkanal ist vollständig freigeschaltet.",
+          preview: "Du kannst dein Abo jederzeit im Künstlerbereich verwalten.",
+          idempotencyKey: `subscription-started-${subscription.id}`
+        });
+      }
     }
-    if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") await setSubscription(event.data.object as Stripe.Subscription);
+    if (event.type === "customer.subscription.updated") await setSubscription(event.data.object as Stripe.Subscription);
+    if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as Stripe.Subscription;
+      const profile = await setSubscription(subscription);
+      if (profile) await sendToProfile(profile, {
+        subject: "Dein Abo wurde beendet",
+        content: "Dein Künstlerkanal läuft jetzt als Basisprofil weiter. Banner, Bio und Links bleiben sichtbar; deine Titel und Videos bleiben gespeichert und werden bei einer Reaktivierung sofort wieder angezeigt.",
+        preview: "Du kannst deinen Kanal jederzeit im Künstlerbereich reaktivieren.",
+        idempotencyKey: `subscription-cancelled-${subscription.id}`
+      });
+    }
     if (event.type === "invoice.payment_failed") {
       const invoice = event.data.object as Stripe.Invoice;
       const subscription = invoice.parent?.subscription_details?.subscription;
       const subscriptionId = typeof subscription === "string" ? subscription : subscription?.id;
-      if (subscriptionId) await admin.from("artist_profiles").update({ billing_status: "past_due" }).eq("stripe_subscription_id", subscriptionId);
+      if (subscriptionId) {
+        const { data: profile } = await admin.from("artist_profiles").select("id,user_id,artist_name").eq("stripe_subscription_id", subscriptionId).maybeSingle<Profile>();
+        await admin.from("artist_profiles").update({ billing_status: "past_due" }).eq("stripe_subscription_id", subscriptionId);
+        if (profile) await sendToProfile(profile, {
+          subject: "Deine Zahlung konnte nicht verarbeitet werden",
+          content: "Bitte prüfe deine Zahlungsdaten im Künstlerbereich. Dein Kanal bleibt zunächst erreichbar, damit du alles ohne Unterbrechung regeln kannst.",
+          preview: "Du kannst deine Zahlungsdaten jederzeit über „Abo verwalten“ aktualisieren.",
+          idempotencyKey: `payment-failed-${invoice.id}`
+        });
+      }
     }
     return NextResponse.json({ received: true });
   } catch (error) {
