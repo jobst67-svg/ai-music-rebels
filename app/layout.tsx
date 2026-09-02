@@ -3,6 +3,7 @@ import "./globals.css";
 import { AutoTranslate } from "@/components/language-switcher";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://aimusicrebels.com"),
   title: "AI Music Rebels",
   description: "Your public artist home for independent AI music."
 };
