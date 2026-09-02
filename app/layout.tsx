@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AutoTranslate } from "@/components/language-switcher";
 
 export const metadata: Metadata = {
   title: "AI Music Rebels",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="de">
-      <body>{children}</body>
+      <body><AutoTranslate />{children}</body>
     </html>
   );
 }
