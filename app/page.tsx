@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getSupabase, hasSupabaseConfig } from "@/lib/supabase";
+import { LanguageSwitcher, useSiteLocale } from "@/components/language-switcher";
+import { SiteFooter } from "@/components/site-footer";
 
 function normalizeSlug(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 32);
@@ -20,7 +22,9 @@ export default function HomePage() {
   const [email, setEmail] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
-  const [winbackOptIn, setWinbackOptIn] = useState(false);
+  const [winbackOptIn, setWinbackOptIn] = useState(true);
+  const locale = useSiteLocale();
+  const english = locale === "en";
   const slug = useMemo(() => normalizeSlug(slugInput || artistName), [artistName, slugInput]);
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export default function HomePage() {
     setStatus("");
 
     if (!slug || slug.length < 3) {
-      setStatus("Bitte wähle einen Namen mit mindestens 3 Zeichen.");
+      setStatus(english ? "Please choose a name with at least 3 characters." : "Bitte wähle einen Namen mit mindestens 3 Zeichen.");
       return;
     }
     if (!email) {
@@ -55,7 +59,7 @@ export default function HomePage() {
           body: JSON.stringify({ profileId })
         });
         const result = await checkout.json() as { url?: string; error?: string };
-        if (!checkout.ok || !result.url) throw new Error(result.error || "Die Zahlungsseite konnte nicht geöffnet werden.");
+        if (!checkout.ok || !result.url) throw new Error(result.error || (english ? "The payment page could not be opened." : "Die Zahlungsseite konnte nicht geöffnet werden."));
         window.location.assign(result.url);
       }
 
@@ -78,7 +82,7 @@ export default function HomePage() {
       const { data: available, error: availabilityError } = await supabase.rpc("is_subdomain_available", { requested_slug: slug });
       if (availabilityError) throw new Error(availabilityError.message);
       if (!available) {
-        setStatus("Dieser Name ist leider schon vergeben.");
+        setStatus(english ? "This name is already taken." : "Dieser Name ist leider schon vergeben.");
         return;
       }
 
@@ -124,39 +128,41 @@ export default function HomePage() {
       <nav className="nav">
         <Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link>
         <div className="navlinks">
-          <a href="#so-gehts">So geht&apos;s</a>
-          <Link href="/artist/lunar-vein">Beispielprofil</Link>
-          <Link href={email ? "/account" : "/auth"}>{email ? "Account" : "Anmelden"}</Link>
+          <a href="#so-gehts">{english ? "How it works" : "So geht&apos;s"}</a>
+          <Link href="/artist/lunar-vein">{english ? "Example profile" : "Beispielprofil"}</Link>
+          <Link href={email ? "/account" : "/auth"}>{email ? "Account" : english ? "Sign in" : "Anmelden"}</Link>
+          <LanguageSwitcher />
         </div>
       </nav>
 
       <section className="hero">
         <div>
           <div className="eyebrow">AI Music · Your artist identity</div>
-          <h1>Mach aus deiner Idee einen Klang.</h1>
-          <p className="lead">Deine eigene Künstlerseite für Musik, die mit neuen Werkzeugen entsteht. Mit Bild, Bio, eingebettetem Player und allen wichtigen Plattformen an einem Ort.</p>
-          <div id="so-gehts" className="steps"><span>01 Namen sichern</span><span>02 Profil gestalten</span><span>03 Musik zeigen</span></div>
+          <h1>{english ? "Turn your idea into sound." : "Mach aus deiner Idee einen Klang."}</h1>
+          <p className="lead">{english ? "Your own artist page for music made with new tools. Image, bio, embedded player and essential platforms in one place." : "Deine eigene Künstlerseite für Musik, die mit neuen Werkzeugen entsteht. Mit Bild, Bio, eingebettetem Player und allen wichtigen Plattformen an einem Ort."}</p>
+          <div id="so-gehts" className="steps"><span>{english ? "01 Claim your name" : "01 Namen sichern"}</span><span>{english ? "02 Shape your profile" : "02 Profil gestalten"}</span><span>{english ? "03 Show your music" : "03 Musik zeigen"}</span></div>
         </div>
 
         <aside className="card">
-          <h2>Deine Subdomain</h2>
-          <p>30 Tage gratis, danach 9,99 € pro Jahr. Die Zahlungsdaten hinterlegst du sicher bei Stripe; kündbar jederzeit über deinen Account.</p>
+          <h2>{english ? "Your subdomain" : "Deine Subdomain"}</h2>
+          <p>{english ? "30 days free, then €9.99 per year. Payment details are securely handled by Stripe; cancel any time in your account." : "30 Tage gratis, danach 9,99 € pro Jahr. Die Zahlungsdaten hinterlegst du sicher bei Stripe; kündbar jederzeit über deinen Account."}</p>
           <form className="form" onSubmit={reserve}>
             <div>
-              <label htmlFor="artistName">Künstlername</label>
-              <input id="artistName" value={artistName} onChange={(event) => setArtistName(event.target.value)} placeholder="z. B. Lunar Vein" />
+              <label htmlFor="artistName">{english ? "Artist name" : "Künstlername"}</label>
+              <input id="artistName" value={artistName} onChange={(event) => setArtistName(event.target.value)} placeholder={english ? "e.g. Lunar Vein" : "z. B. Lunar Vein"} />
             </div>
             <div>
-              <label htmlFor="slug">Deine Adresse</label>
+              <label htmlFor="slug">{english ? "Your address" : "Deine Adresse"}</label>
               <input id="slug" value={slugInput} onChange={(event) => setSlugInput(event.target.value)} placeholder={slug || "lunar-vein"} />
-              <p className="note">{slug ? `${slug}.aimusicrebels.com` : "Wird aus deinem Künstlernamen erstellt"}</p>
+              <p className="note">{slug ? `${slug}.aimusicrebels.com` : english ? "Created from your artist name" : "Wird aus deinem Künstlernamen erstellt"}</p>
             </div>
-            <label className="consent"><input type="checkbox" checked={winbackOptIn} onChange={(event) => setWinbackOptIn(event.target.checked)} /> Ich möchte nach einem abgelaufenen Abo maximal monatlich eine Erinnerung zur Reaktivierung erhalten.</label>
-            <button disabled={busy}>{busy ? "Weiter zu Stripe …" : email ? "Zahlungsdaten hinterlegen & starten" : "Anmelden & starten"}</button>
+            <label className="consent"><input type="checkbox" checked={winbackOptIn} onChange={(event) => setWinbackOptIn(event.target.checked)} /> {english ? "After an expired subscription, send me at most one reactivation reminder per month." : "Ich möchte nach einem abgelaufenen Abo maximal monatlich eine Erinnerung zur Reaktivierung erhalten."}</label>
+            <button disabled={busy}>{busy ? (english ? "Opening Stripe …" : "Weiter zu Stripe …") : email ? (english ? "Add payment details & start" : "Zahlungsdaten hinterlegen & starten") : (english ? "Sign in & start" : "Anmelden & starten")}</button>
             {status && <p className={status.startsWith("Reserviert") ? "note success" : "note error"}>{status}</p>}
           </form>
         </aside>
       </section>
+      <SiteFooter />
     </main>
   );
 }
