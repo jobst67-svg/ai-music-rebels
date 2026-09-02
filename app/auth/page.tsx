@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { getSupabase, hasSupabaseConfig } from "@/lib/supabase";
+import { SiteFooter } from "@/components/site-footer";
 
 const publicSiteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://aimusicrebels.com").replace(/\/$/, "");
 
@@ -104,6 +105,7 @@ export default function AuthPage() {
           {message && <p className="note">{message}</p>}
         </form>
       </section>
+      <SiteFooter />
     </main>
   );
 }
