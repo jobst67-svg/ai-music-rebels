@@ -143,6 +143,11 @@ const deToEn: Record<string, string> = {
   ,"Nur der kostenlose Profil-Ausschnitt wird angezeigt.": "Only the free profile excerpt is shown."
   ,"Vollständiges Premiumprofil": "Full premium profile"
   ,"Das Premiumprofil ist für diesen Kanal noch nicht freigeschaltet.": "The premium profile is not enabled for this channel yet."
+  ,"Kostenlose Subdomain sichern": "Claim free subdomain"
+  ,"Anmelden & sichern": "Sign in & claim"
+  ,"Profil wird erstellt …": "Creating your profile …"
+  ,"Premium aktivieren": "Activate premium"
+  ,"Premium sichern": "Get premium"
 };
 
 const enToDe = Object.fromEntries(Object.entries(deToEn).map(([de, en]) => [en, de]));
