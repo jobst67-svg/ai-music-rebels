@@ -51,18 +51,6 @@ export default function HomePage() {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) throw new Error("Bitte melde dich erneut an.");
 
-      async function openCheckout(profileId: string) {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const checkout = await fetch("/api/billing/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData.session?.access_token ?? ""}` },
-          body: JSON.stringify({ profileId })
-        });
-        const result = await checkout.json() as { url?: string; error?: string };
-        if (!checkout.ok || !result.url) throw new Error(result.error || (english ? "The payment page could not be opened." : "Die Zahlungsseite konnte nicht geöffnet werden."));
-        window.location.assign(result.url);
-      }
-
       const { data: existingProfile, error: existingProfileError } = await supabase
         .from("artist_profiles")
         .select("id,billing_status")
@@ -75,7 +63,7 @@ export default function HomePage() {
           window.location.assign("/account");
           return;
         }
-        await openCheckout(existingProfile.id);
+        window.location.assign("/account");
         return;
       }
 
@@ -93,14 +81,18 @@ export default function HomePage() {
         .single();
       if (reservationError) throw reservationError;
 
+      const trialStartedAt = new Date();
+      const trialEndsAt = new Date(trialStartedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
       const { data: profile, error: profileError } = await supabase.from("artist_profiles").insert({
         user_id: userData.user.id,
         reservation_id: reservation.id,
         slug,
         artist_name: artistName || slug,
         is_published: false,
-        billing_status: "pending",
+        billing_status: "trialing",
         channel_mode: "full",
+        trial_started_at: trialStartedAt.toISOString(),
+        trial_ends_at: trialEndsAt.toISOString(),
         winback_opt_in: winbackOptIn
       }).select("id").single();
       if (profileError) throw profileError;
@@ -114,7 +106,7 @@ export default function HomePage() {
       } catch (notificationError) {
         console.warn("[reservation] admin notification failed", notificationError);
       }
-      await openCheckout(profile.id);
+      window.location.assign("/account");
     } catch (error) {
       console.error("[reservation] failed", error);
       setStatus(readableError(error));
@@ -145,7 +137,7 @@ export default function HomePage() {
 
         <aside className="card">
           <h2>{english ? "Your subdomain" : "Deine Subdomain"}</h2>
-          <p>{english ? "30 days free, then €9.99 per year. Payment details are securely handled by Stripe; cancel any time in your account." : "30 Tage gratis, danach 9,99 € pro Jahr. Die Zahlungsdaten hinterlegst du sicher bei Stripe; kündbar jederzeit über deinen Account."}</p>
+          <p>{english ? "Claim your subdomain permanently for free. Start with a 30-day premium profile, then keep a free profile. Premium is always optional at €9.99 per year." : "Sichere dir deine Subdomain dauerhaft kostenlos. Starte mit einem 30-tägigen Premiumprofil und behalte danach dein Free-Profil. Premium ist jederzeit optional für 9,99 € pro Jahr."}</p>
           <form className="form" onSubmit={reserve}>
             <div>
               <label htmlFor="artistName">{english ? "Artist name" : "Künstlername"}</label>
@@ -157,7 +149,7 @@ export default function HomePage() {
               <p className="note">{slug ? `${slug}.aimusicrebels.com` : english ? "Created from your artist name" : "Wird aus deinem Künstlernamen erstellt"}</p>
             </div>
             <label className="consent"><input type="checkbox" checked={winbackOptIn} onChange={(event) => setWinbackOptIn(event.target.checked)} /> {english ? "After an expired subscription, send me at most one reactivation reminder per month." : "Ich möchte nach einem abgelaufenen Abo maximal monatlich eine Erinnerung zur Reaktivierung erhalten."}</label>
-            <button disabled={busy}>{busy ? (english ? "Opening Stripe …" : "Weiter zu Stripe …") : email ? (english ? "Add payment details & start" : "Zahlungsdaten hinterlegen & starten") : (english ? "Sign in & start" : "Anmelden & starten")}</button>
+            <button disabled={busy}>{busy ? (english ? "Creating your profile …" : "Profil wird erstellt …") : email ? (english ? "Claim free subdomain" : "Kostenlose Subdomain sichern") : (english ? "Sign in & claim" : "Anmelden & sichern")}</button>
             {status && <p className={status.startsWith("Reserviert") ? "note success" : "note error"}>{status}</p>}
           </form>
         </aside>
