@@ -38,15 +38,43 @@ export default function HomePage() {
     setBusy(true);
     try {
       const supabase = getSupabase();
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) throw new Error("Bitte melde dich erneut an.");
+
+      async function openCheckout(profileId: string) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const checkout = await fetch("/api/billing/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData.session?.access_token ?? ""}` },
+          body: JSON.stringify({ profileId })
+        });
+        const result = await checkout.json() as { url?: string; error?: string };
+        if (!checkout.ok || !result.url) throw new Error(result.error || "Die Zahlungsseite konnte nicht geöffnet werden.");
+        window.location.assign(result.url);
+      }
+
+      const { data: existingProfile, error: existingProfileError } = await supabase
+        .from("artist_profiles")
+        .select("id,billing_status")
+        .eq("user_id", userData.user.id)
+        .eq("slug", slug)
+        .maybeSingle();
+      if (existingProfileError) throw new Error(existingProfileError.message);
+      if (existingProfile) {
+        if (["trialing", "active", "past_due"].includes(existingProfile.billing_status)) {
+          window.location.assign("/account");
+          return;
+        }
+        await openCheckout(existingProfile.id);
+        return;
+      }
+
       const { data: available, error: availabilityError } = await supabase.rpc("is_subdomain_available", { requested_slug: slug });
-      if (availabilityError) throw availabilityError;
+      if (availabilityError) throw new Error(availabilityError.message);
       if (!available) {
         setStatus("Dieser Name ist leider schon vergeben.");
         return;
       }
-
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) throw new Error("Bitte melde dich erneut an.");
 
       const { data: reservation, error: reservationError } = await supabase
         .from("subdomain_reservations")
@@ -66,15 +94,7 @@ export default function HomePage() {
         winback_opt_in: winbackOptIn
       }).select("id").single();
       if (profileError) throw profileError;
-      const { data: sessionData } = await supabase.auth.getSession();
-      const checkout = await fetch("/api/billing/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData.session?.access_token ?? ""}` },
-        body: JSON.stringify({ profileId: profile.id })
-      });
-      const result = await checkout.json() as { url?: string; error?: string };
-      if (!checkout.ok || !result.url) throw new Error(result.error || "Die Zahlungsseite konnte nicht geöffnet werden.");
-      window.location.assign(result.url);
+      await openCheckout(profile.id);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Etwas ist schiefgelaufen. Bitte versuche es erneut.");
     } finally {
