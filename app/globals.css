@@ -167,6 +167,9 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .platform-editor-head > div { min-width:0; }
 .platform-summary { margin:5px 0 0; }
 .platform-editor-head > button { flex:0 0 auto; }
+.platform-link-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+.platform-link-grid > .wide { grid-column:1 / -1; }
+@media (max-width:760px) { .platform-link-grid { grid-template-columns:1fr; } .platform-link-grid > .wide { grid-column:auto; } }
 @media (max-width:760px) { .channel-head,.channel-content { padding-left:18px; padding-right:18px; } .channel-head { align-items:flex-start; flex-direction:column; margin-top:-48px; } .channel-avatar { width:108px; height:108px; } .video-grid { grid-template-columns:repeat(2,1fr); } .video-form { grid-template-columns:1fr; } }
 @media (max-width:760px) { .profile-view-switch { margin-left:18px; margin-right:18px; } .profile-view-note { margin-left:18px; margin-right:18px; } }
 @media (max-width:560px) { .free-link-grid { grid-template-columns:repeat(3, minmax(72px, 1fr)); } }

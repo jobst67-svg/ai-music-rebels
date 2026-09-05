@@ -84,6 +84,8 @@ const deToEn: Record<string, string> = {
   "Zurück": "Back",
   "Jetzt mitmachen": "Join Now",
   "Plattformen ändern": "Change platforms",
+  "Plattformen und Links ändern": "Change platforms and links",
+  "Plattformen und Links schließen": "Close platforms and links",
   "Plattformauswahl schließen": "Close platform selection",
   "Noch keine Plattform ausgewählt": "No platform selected",
   "Akzentfarbe": "Accent color",
