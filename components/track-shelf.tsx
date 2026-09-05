@@ -37,13 +37,15 @@ function embedForTrack(track: ArtistTrack): EmbeddedTrack | null {
   return null;
 }
 
-export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = true, sectionLabel = "Songs" }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; showPlayer?: boolean; sectionLabel?: string }) {
+export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = true, sectionLabel = "Songs", playerKey, activePlayerKey, onPlayerActivate }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; showPlayer?: boolean; sectionLabel?: string; playerKey?: string; activePlayerKey?: string | null; onPlayerActivate?: (playerKey: string) => void }) {
   const embeddedTracks = useMemo(() => tracks.map(embedForTrack).filter((track): track is EmbeddedTrack => Boolean(track)), [tracks]);
   const [activeId, setActiveId] = useState<number | null>(embeddedTracks[0]?.id ?? null);
   const [spotifyCovers, setSpotifyCovers] = useState<Record<number, string>>({});
   const rail = useRef<HTMLDivElement>(null);
   const scrollRail = (direction: number) => rail.current?.scrollBy({ left: rail.current.clientWidth * 0.82 * direction, behavior: "smooth" });
   const activeTrack = embeddedTracks.find((track) => track.id === activeId) ?? embeddedTracks[0];
+  const playerIsActive = !playerKey || activePlayerKey === playerKey;
+  const activatePlayer = () => { if (playerKey) onPlayerActivate?.(playerKey); };
   useEffect(() => {
     let cancelled = false;
     const missing = tracks.filter((track) => !track.cover_path && track.platform.toLowerCase() === "spotify");
@@ -67,15 +69,17 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
 
   return <section className="track-shelf">
     <div className="section-title"><div><div className="eyebrow">{sectionLabel}</div><h2>Ausgewählte Titel</h2></div><div className="shelf-controls"><span>{tracks.length}</span><button type="button" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button><button type="button" aria-label="Titel nach rechts" onClick={() => scrollRail(1)}>›</button></div></div>
-    {showPlayer && activeTrack && <div className={`music-player ${activeTrack.kind}`}>
+    {showPlayer && playerIsActive && activeTrack && <div className={`music-player ${activeTrack.kind}`}>
       <iframe src={activeTrack.embedUrl} title={`${activeTrack.title} ${activeTrack.platform} player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
     </div>}
-    <div className="track-grid" ref={rail}>
+    <div className="shelf-rail">
+      <button type="button" className="shelf-arrow left" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button>
+      <div className="track-grid" ref={rail}>
       {tracks.map((track) => {
         const embedded = embedForTrack(track);
         const canPlay = showPlayer && Boolean(embedded);
         return <article className="track-card" key={track.id}>
-        {canPlay ? <button type="button" onClick={() => setActiveId(track.id)} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={`${track.title} abspielen`}>
+        {canPlay ? <button type="button" onClick={() => { setActiveId(track.id); activatePlayer(); }} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={`${track.title} abspielen`}>
           {track.cover_path || spotifyCovers[track.id] ? <img src={track.cover_path || spotifyCovers[track.id]} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
           <i>▶</i>
         </button> : <a href={track.track_url} target="_blank" rel="noreferrer" className="track-cover">
@@ -87,6 +91,8 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
         {editable && <button type="button" className="removevideo" onClick={() => onDelete?.(track.id)}>Entfernen</button>}
       </article>;
       })}
+      </div>
+      <button type="button" className="shelf-arrow right" aria-label="Titel nach rechts" onClick={() => scrollRail(1)}>›</button>
     </div>
   </section>;
 }

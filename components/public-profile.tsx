@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArtistTrack, TrackShelf } from "@/components/track-shelf";
 import { ChannelVideo, VideoShelf } from "@/components/video-shelf";
 
@@ -40,6 +40,15 @@ export function PublicProfile({ profile, name, links, tracks, videos, showViewSw
   const [view, setView] = useState<"free" | "premium">(initialView ?? (hasPremiumProfile ? "premium" : "free"));
   const visibleTracks = view === "premium" ? tracks : tracks.slice(0, 5);
   const visibleVideos = view === "premium" ? videos : [];
+  const groupedTracks = useMemo(() => Object.entries(visibleTracks.reduce<Record<string, ArtistTrack[]>>((groups, track) => {
+    const key = track.platform.trim() || "Weitere Plattformen";
+    (groups[key] ||= []).push(track);
+    return groups;
+  }, {})), [visibleTracks]);
+  const firstPlayerKey = groupedTracks.find(([platform]) => ["spotify", "soundcloud", "bandcamp"].includes(platform.toLowerCase()))?.[0];
+  const activePlayerKey = firstPlayerKey ? `tracks-${firstPlayerKey.toLowerCase()}` : visibleVideos.length > 0 ? "videos" : null;
+  const [selectedPlayerKey, setSelectedPlayerKey] = useState<string | null>(null);
+  const currentPlayerKey = selectedPlayerKey ?? activePlayerKey;
 
   return <>
     {showViewSwitch ? <>
@@ -49,6 +58,13 @@ export function PublicProfile({ profile, name, links, tracks, videos, showViewSw
       </div>
       {view === "free" ? <p className="profile-view-note">Nur der kostenlose Profil-Ausschnitt wird angezeigt.</p> : hasPremiumProfile ? <p className="profile-view-note">Vollständiges Premiumprofil</p> : <p className="profile-view-note">Das Premiumprofil ist für diesen Kanal noch nicht freigeschaltet.</p>}
     </> : <p className="profile-view-note">{hasPremiumProfile ? "Premiumprofil" : "Freeprofil"}</p>}
-    <div className="channel-content"><p className="bio">{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p>{links.length > 0 && <div className="links">{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer"><ServiceIcon label={label} /><span>{label}</span><span aria-hidden="true">↗</span></a>)}</div>}{hasPremiumProfile && <>{Object.entries(visibleTracks.reduce<Record<string, ArtistTrack[]>>((groups, track) => { const key = track.platform.trim() || "Weitere Plattformen"; (groups[key] ||= []).push(track); return groups; }, {})).map(([platform, platformTracks]) => <TrackShelf key={platform} tracks={platformTracks} sectionLabel={platform} showPlayer={view === "premium" && ["spotify", "soundcloud", "bandcamp"].includes(platform.toLowerCase())} />)}<VideoShelf videos={visibleVideos} /></>}</div>
+    <div className="channel-content">
+      <p className="bio">{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p>
+      {links.length > 0 && <div className="links">{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer"><ServiceIcon label={label} /><span>{label}</span><span aria-hidden="true">↗</span></a>)}</div>}
+      {hasPremiumProfile && <>
+        {groupedTracks.map(([platform, platformTracks]) => <TrackShelf key={platform} tracks={platformTracks} sectionLabel={platform} showPlayer={view === "premium" && ["spotify", "soundcloud", "bandcamp"].includes(platform.toLowerCase())} playerKey={`tracks-${platform.toLowerCase()}`} activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />)}
+        <VideoShelf videos={visibleVideos} playerKey="videos" activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />
+      </>}
+    </div>
   </>;
 }
