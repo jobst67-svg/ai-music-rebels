@@ -39,18 +39,20 @@ export default function HomePage() {
         <nav className={styles.nav}>
           <Link className={styles.brand} href="/">AI MUSIC <em>REBELS</em><small>MUSIC HAS NO BORDERS</small></Link>
           <div className={styles.navlinks}>
+            <Link className={styles.activeNav} href="/">Home</Link>
             <a href="#rebels">{english ? "Discover" : "Entdecken"}</a>
             <a href="#how">{english ? "How it works" : "So geht's"}</a>
             <Link href={email ? "/account" : "/auth?next=/claim-subdomain"}>{email ? "Account" : english ? "Login" : "Anmelden"}</Link>
             <LanguageSwitcher />
+            {!email && <Link className={styles.joinButton} href="/auth?next=/claim-subdomain">{english ? "Join Now" : "Jetzt mitmachen"}</Link>}
           </div>
         </nav>
 
         <section className={styles.hero}>
           <div className={styles.heroCopy}>
-            <div className={styles.eyebrow}>{english ? "Independent creators. Your music. Your space." : "Independent Creators. Deine Musik. Dein Platz."}</div>
+            <div className={styles.eyebrow}>{english ? "Independent creators. Real music. Bigger tomorrow." : "Independent Creators. Echte Musik. Größer morgen."}</div>
             <h1><span>{english ? "YOUR MUSIC." : "DEINE MUSIK."}</span><span className={styles.green}>{english ? "YOUR PROFILE." : "DEIN PROFIL."}</span><span>{english ? "YOUR RULES." : "DEINE REGELN."}</span></h1>
-            <p>{english ? "Create your own free artist profile and share your music, links and videos — all in one place. Built for AI music creators." : "Erstelle dein kostenloses Künstlerprofil und zeig Musik, Links und Videos an einem Ort. Gebaut für AI Music Creator."}</p>
+            <p>{english ? "Create your own free artist profile and share your music, links and videos — all in one place. Built for AI music creators. By creators." : "Erstelle dein kostenloses Künstlerprofil und zeig Musik, Links und Videos an einem Ort. Gebaut für AI Music Creator. Von Creators."}</p>
             {email ? <Link className={styles.primaryButton} href="/claim-subdomain">{english ? "Claim your subdomain" : "Subdomain sichern"}</Link> : <div className={styles.signupButtons}>
               <button type="button" className={styles.googleButton} onClick={continueWithGoogle} disabled={authBusy}><span className={styles.googleMark}>G</span>{authBusy ? (english ? "Connecting …" : "Verbinden …") : (english ? "Continue with Google" : "Mit Google registrieren")}</button>
               <div className={styles.or}><span />{english ? "OR" : "ODER"}<span /></div>
@@ -62,7 +64,10 @@ export default function HomePage() {
         </section>
 
         <section id="rebels" className={styles.rebelsSection}>
-          <div className={styles.sectionHead}><div><h2>{english ? "NEWEST " : "NEUESTE "}<em>{english ? "REBELS" : "REBELLEN"}</em></h2><p>{english ? "The latest artists to join the rebellion." : "Die neuesten Artists der Rebellion."}</p></div><div className={styles.arrows}><button type="button" onClick={() => rail.current?.scrollBy({left:-520,behavior:"smooth"})}>‹</button><button type="button" onClick={() => rail.current?.scrollBy({left:520,behavior:"smooth"})}>›</button></div></div>
+          <div className={styles.sectionHead}>
+            <div><h2>{english ? "NEWEST " : "NEUESTE "}<em>{english ? "REBELS" : "REBELLEN"}</em></h2><p>{english ? "The latest artists to join the rebellion." : "Die neuesten Artists der Rebellion."}</p></div>
+            <div className={styles.sectionActions}><span>{english ? "Swipe to discover" : "Wischen zum Entdecken"}</span><div className={styles.arrows}><button type="button" onClick={() => rail.current?.scrollBy({left:-520,behavior:"smooth"})}>‹</button><button type="button" onClick={() => rail.current?.scrollBy({left:520,behavior:"smooth"})}>›</button></div></div>
+          </div>
           <div className={styles.rail} ref={rail}>
             {rebels.map((artist) => <a className={styles.artistCard} href={`https://${artist.slug}.aimusicrebels.com`} key={artist.id}><div className={styles.avatar}>{artist.image_path ? <img src={artist.image_path} alt="" /> : <span>{(artist.artist_name || "R").slice(0,1)}</span>}</div><strong>{artist.artist_name || artist.slug}</strong><small>{artist.tagline || "AI Music"}</small></a>)}
             {rebels.length === 0 && <div className={styles.emptyCard}><span>⚡</span><strong>{english ? "The first Rebels are coming." : "Die ersten Rebellen kommen."}</strong><small>{english ? "Your profile can be one of them." : "Dein Profil kann dazugehören."}</small></div>}
@@ -70,7 +75,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="how" className={styles.benefits}><div><b>♫</b><span>{english ? "Showcase your tracks" : "Zeig deine Tracks"}</span></div><div><b>◎</b><span>{english ? "Connect with listeners" : "Verbinde dich mit Hörern"}</span></div><div><b>⌘</b><span>{english ? "All your links in one place" : "Alle Links an einem Ort"}</span></div><div><b>▥</b><span>{english ? "Grow on your terms" : "Wachse nach deinen Regeln"}</span></div></section>
+        <section id="how" className={styles.benefits}>
+          <div><b>♫</b><span>{english ? "Showcase your tracks" : "Zeig deine Tracks"}</span></div>
+          <div><b>◎</b><span>{english ? "Connect with listeners" : "Verbinde dich mit Hörern"}</span></div>
+          <div><b>⌘</b><span>{english ? "All your links in one place" : "Alle Links an einem Ort"}</span></div>
+          <div><b>▥</b><span>{english ? "Grow your audience on your terms" : "Wachse nach deinen Regeln"}</span></div>
+        </section>
+
+        <section className={styles.rebellionFooter}>
+          <div><div className={styles.footerBrand}>AI MUSIC <em>REBELS</em><small>MUSIC HAS NO BORDERS</small></div><p>{english ? "Independent artists. A louder tomorrow." : "Independent Artists. Eine lautere Zukunft."}</p></div>
+          <Link href="/auth?next=/claim-subdomain">{english ? "JOIN THE REBELLION." : "JOIN THE REBELLION."}</Link>
+        </section>
       </div>
       <SiteFooter />
     </main>
