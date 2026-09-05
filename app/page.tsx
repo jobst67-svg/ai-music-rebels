@@ -91,7 +91,7 @@ export default function HomePage() {
 
         <section className={styles.rebellionFooter}>
           <div className={styles.footerIdentity}><RebelsLogo footer /><p>{english ? "Independent artists. A louder tomorrow." : "Independent Artists. Eine lautere Zukunft."}</p></div>
-          <Link className={styles.rebellionCta} href="/auth?next=/claim-subdomain"><span>JOIN THE REBELLION.</span><small>AIMUSICREBELS.COM</small></Link>
+          <Link className={styles.rebellionCta} href="/auth?next=/claim-subdomain"><img className={styles.rebellionCtaImage} src="/rebellion-cta.png" alt={english ? "Join the rebellion" : "Der Rebellion beitreten"} /></Link>
         </section>
       </div>
       <SiteFooter />
