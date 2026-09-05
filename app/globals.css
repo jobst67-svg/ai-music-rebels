@@ -181,11 +181,27 @@ html[data-locale="en"] .en-copy { display:block; }
 .admin-wide { grid-column:1 / -1; }
 @media (max-width:640px) { .site-footer,.admin-user-head { align-items:flex-start; flex-direction:column; } .site-footer > div { flex-wrap:wrap; } .admin-actions { justify-content:flex-start; } .admin-profile-grid { grid-template-columns:1fr; } }
 
-/* Platform-specific horizontal carousels */
-.track-grid { display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:2px 2px 12px; }
-.track-grid::-webkit-scrollbar { display:none; }
-.track-card { flex:0 0 190px; scroll-snap-align:start; }
-@media (max-width:760px) { .track-grid { display:flex; gap:13px; } .track-card { flex:0 0 172px; } }
+/* Horizontal profile carousels */
+.shelf-controls { display:flex; align-items:center; gap:8px; }
+.shelf-controls > span { color:var(--muted); font-size:13px; }
+.shelf-controls button { width:30px; height:30px; padding:0; border:1px solid #3a3e47; border-radius:50%; background:#20242b; color:#f6f4ef; font-size:21px; line-height:1; display:grid; place-items:center; }
+.shelf-controls button:hover { border-color:var(--lime); color:var(--lime); }
+.track-grid, .video-grid { display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:2px 2px 12px; }
+.track-grid::-webkit-scrollbar, .video-grid::-webkit-scrollbar { display:none; }
+.track-card { flex:0 0 220px; scroll-snap-align:start; }
+.video-card { flex:0 0 300px; scroll-snap-align:start; }
+.links a { display:inline-flex; align-items:center; gap:8px; }
+.service-icon { width:18px; height:18px; display:block; flex:none; }
+.service-letter { width:18px; height:18px; border-radius:50%; display:grid; place-items:center; background:#24272e; color:#f6f4ef; font-size:11px; font-weight:900; line-height:1; flex:none; }
+.service-letter.suno { background:var(--lime); color:#101116; }
+.service-letter.tiktok { background:#111; color:#25f4ee; border:1px solid #fe2c55; }
+.service-letter.soundcloud { background:#ff5500; color:white; font-size:12px; }
+.service-letter.bandcamp { background:#1da0c3; color:white; font-size:13px; }
+@media (max-width:760px) {
+  .track-grid, .video-grid { gap:13px; }
+  .track-card { flex-basis:172px; }
+  .video-card { flex-basis:78vw; max-width:300px; }
+}
 
 
 .genre-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }

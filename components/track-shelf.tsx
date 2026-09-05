@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export type ArtistTrack = {
   id: number;
@@ -41,6 +41,8 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
   const embeddedTracks = useMemo(() => tracks.map(embedForTrack).filter((track): track is EmbeddedTrack => Boolean(track)), [tracks]);
   const [activeId, setActiveId] = useState<number | null>(embeddedTracks[0]?.id ?? null);
   const [spotifyCovers, setSpotifyCovers] = useState<Record<number, string>>({});
+  const rail = useRef<HTMLDivElement>(null);
+  const scrollRail = (direction: number) => rail.current?.scrollBy({ left: rail.current.clientWidth * 0.82 * direction, behavior: "smooth" });
   const activeTrack = embeddedTracks.find((track) => track.id === activeId) ?? embeddedTracks[0];
   useEffect(() => {
     let cancelled = false;
@@ -64,11 +66,11 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
   if (tracks.length === 0) return null;
 
   return <section className="track-shelf">
-    <div className="section-title"><div><div className="eyebrow">{sectionLabel}</div><h2>Ausgewählte Titel</h2></div><span>{tracks.length}</span></div>
+    <div className="section-title"><div><div className="eyebrow">{sectionLabel}</div><h2>Ausgewählte Titel</h2></div><div className="shelf-controls"><span>{tracks.length}</span><button type="button" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button><button type="button" aria-label="Titel nach rechts" onClick={() => scrollRail(1)}>›</button></div></div>
     {showPlayer && activeTrack && <div className={`music-player ${activeTrack.kind}`}>
       <iframe src={activeTrack.embedUrl} title={`${activeTrack.title} ${activeTrack.platform} player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
     </div>}
-    <div className="track-grid">
+    <div className="track-grid" ref={rail}>
       {tracks.map((track) => {
         const embedded = embedForTrack(track);
         const canPlay = showPlayer && Boolean(embedded);
