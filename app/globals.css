@@ -139,7 +139,7 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .track-editor { border:1px solid var(--line); border-radius:14px; padding:16px; background:#15171c; }
 .save-actions { display:flex; align-items:center; gap:10px; }
 .track-shelf { margin-top:44px; }
-.music-player { width:100%; min-height:152px; margin:0 0 20px; overflow:hidden; border:1px solid var(--line); border-radius:13px; background:#111216; }
+.music-player { width:100%; min-height:152px; margin:0 0 20px; overflow:hidden; border:1px solid var(--line); border-radius:13px; background:#111216; } .music-player.spotify-compact { height:152px; min-height:152px; } .music-player.spotify-compact iframe { height:152px; }
 .music-player iframe { display:block; width:100%; height:152px; border:0; }
 .music-player.soundcloud { min-height:248px; }
 .music-player.soundcloud iframe { height:248px; }

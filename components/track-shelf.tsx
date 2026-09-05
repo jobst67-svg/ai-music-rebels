@@ -48,6 +48,7 @@ export function TrackShelf({ tracks, editable = false, onDelete, onEdit, showPla
   const playerIsActive = !playerKey || activePlayerKey === playerKey;
   const activatePlayer = (autoplay = false) => { if (autoplay) setShouldAutoplay(true); if (playerKey) onPlayerActivate?.(playerKey); };
   const playerSrc = activeTrack && shouldAutoplay ? activeTrack.kind === "soundcloud" ? activeTrack.embedUrl.replace("auto_play=false", "auto_play=true") : `${activeTrack.embedUrl}${activeTrack.embedUrl.includes("?") ? "&" : "?"}autoplay=1` : activeTrack?.embedUrl;
+  const spotifySrc = activeTrack?.kind === "spotify" ? `${activeTrack.embedUrl}${shouldAutoplay && playerIsActive ? "&autoplay=1" : ""}` : undefined;
   const activeCover = activeTrack?.cover_path || spotifyCovers[activeTrack?.id ?? -1];
   useEffect(() => {
     let cancelled = false;
@@ -72,12 +73,14 @@ export function TrackShelf({ tracks, editable = false, onDelete, onEdit, showPla
 
   return <section className="track-shelf">
     <div className="section-title"><div><div className="eyebrow">{sectionLabel}</div><h2>Ausgewählte Titel</h2></div><div className="shelf-controls"><span>{tracks.length}</span><button type="button" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button><button type="button" aria-label="Titel nach rechts" onClick={() => scrollRail(1)}>›</button></div></div>
-    {showPlayer && activeTrack && <div className={`music-player ${activeTrack.kind} ${playerIsActive ? "" : "player-placeholder"}`}>
+    {showPlayer && activeTrack && (activeTrack.kind === "spotify" ? <div className="music-player spotify spotify-compact">
+      <iframe key={`${activeTrack.id}-${playerIsActive ? "active" : "idle"}`} src={spotifySrc ?? activeTrack.embedUrl} title={`${activeTrack.title} Spotify player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+    </div> : <div className={`music-player ${activeTrack.kind} ${playerIsActive ? "" : "player-placeholder"}`}>
       {playerIsActive ? <iframe src={playerSrc} title={`${activeTrack.title} ${activeTrack.platform} player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" /> : <button type="button" className="preview-placeholder" onClick={() => activatePlayer(true)} aria-label={`${activeTrack.title} Player aktivieren`}>
         {activeCover ? <img src={activeCover} alt="" /> : <span className="preview-placeholder-letter">{activeTrack.title.slice(0, 1)}</span>}
         <span className="preview-placeholder-overlay">▶ Vorschau öffnen</span>
       </button>}
-    </div>}
+    </div>)}
     <div className="shelf-rail">
       <button type="button" className="shelf-arrow left" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button>
       <div className="track-grid" ref={rail}>
