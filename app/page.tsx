@@ -64,7 +64,10 @@ export default function HomePage() {
             </div>}
             <div className={styles.promises}><span>◎ {english ? "Lifetime free subdomain" : "Subdomain dauerhaft kostenlos"}</span><span>▣ {english ? "No credit card required" : "Keine Kreditkarte nötig"}</span></div>
           </div>
-          <div className={styles.heroVisual} aria-hidden="true"><div className={styles.heroGlow} /></div>
+          <div className={styles.heroVisual} aria-hidden="true">
+            <img className={styles.heroWoman} src="/rebels-hero-woman.webp" alt="" />
+            <div className={styles.heroGlow} />
+          </div>
         </section>
 
         <section id="rebels" className={styles.rebelsSection}>
