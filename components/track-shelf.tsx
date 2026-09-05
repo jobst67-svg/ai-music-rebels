@@ -41,11 +41,14 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
   const embeddedTracks = useMemo(() => tracks.map(embedForTrack).filter((track): track is EmbeddedTrack => Boolean(track)), [tracks]);
   const [activeId, setActiveId] = useState<number | null>(embeddedTracks[0]?.id ?? null);
   const [spotifyCovers, setSpotifyCovers] = useState<Record<number, string>>({});
+  const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const rail = useRef<HTMLDivElement>(null);
   const scrollRail = (direction: number) => rail.current?.scrollBy({ left: rail.current.clientWidth * 0.82 * direction, behavior: "smooth" });
   const activeTrack = embeddedTracks.find((track) => track.id === activeId) ?? embeddedTracks[0];
   const playerIsActive = !playerKey || activePlayerKey === playerKey;
-  const activatePlayer = () => { if (playerKey) onPlayerActivate?.(playerKey); };
+  const activatePlayer = (autoplay = false) => { if (autoplay) setShouldAutoplay(true); if (playerKey) onPlayerActivate?.(playerKey); };
+  const playerSrc = activeTrack && shouldAutoplay ? activeTrack.kind === "soundcloud" ? activeTrack.embedUrl.replace("auto_play=false", "auto_play=true") : `${activeTrack.embedUrl}${activeTrack.embedUrl.includes("?") ? "&" : "?"}autoplay=1` : activeTrack?.embedUrl;
+  const activeCover = activeTrack?.cover_path || spotifyCovers[activeTrack?.id ?? -1];
   useEffect(() => {
     let cancelled = false;
     const missing = tracks.filter((track) => !track.cover_path && track.platform.toLowerCase() === "spotify");
@@ -69,8 +72,11 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
 
   return <section className="track-shelf">
     <div className="section-title"><div><div className="eyebrow">{sectionLabel}</div><h2>Ausgewählte Titel</h2></div><div className="shelf-controls"><span>{tracks.length}</span><button type="button" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button><button type="button" aria-label="Titel nach rechts" onClick={() => scrollRail(1)}>›</button></div></div>
-    {showPlayer && playerIsActive && activeTrack && <div className={`music-player ${activeTrack.kind}`}>
-      <iframe src={activeTrack.embedUrl} title={`${activeTrack.title} ${activeTrack.platform} player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+    {showPlayer && activeTrack && <div className={`music-player ${activeTrack.kind} ${playerIsActive ? "" : "player-placeholder"}`}>
+      {playerIsActive ? <iframe src={playerSrc} title={`${activeTrack.title} ${activeTrack.platform} player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" /> : <button type="button" className="preview-placeholder" onClick={() => activatePlayer(true)} aria-label={`${activeTrack.title} Player aktivieren`}>
+        {activeCover ? <img src={activeCover} alt="" /> : <span className="preview-placeholder-letter">{activeTrack.title.slice(0, 1)}</span>}
+        <span className="preview-placeholder-overlay">▶ Vorschau öffnen</span>
+      </button>}
     </div>}
     <div className="shelf-rail">
       <button type="button" className="shelf-arrow left" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button>
@@ -79,7 +85,7 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
         const embedded = embedForTrack(track);
         const canPlay = showPlayer && Boolean(embedded);
         return <article className="track-card" key={track.id}>
-        {canPlay ? <button type="button" onClick={() => { setActiveId(track.id); activatePlayer(); }} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={`${track.title} abspielen`}>
+        {canPlay ? <button type="button" onClick={() => { setActiveId(track.id); activatePlayer(true); }} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={`${track.title} abspielen`}>
           {track.cover_path || spotifyCovers[track.id] ? <img src={track.cover_path || spotifyCovers[track.id]} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
           <i>▶</i>
         </button> : <a href={track.track_url} target="_blank" rel="noreferrer" className="track-cover">

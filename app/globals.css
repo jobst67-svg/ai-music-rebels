@@ -190,6 +190,12 @@ html[data-locale="en"] .en-copy { display:block; }
 .shelf-arrow { position:absolute; top:calc(50% - 22px); z-index:2; width:36px; height:36px; font-size:25px; box-shadow:0 4px 16px #0008; }
 .shelf-arrow.left { left:8px; }
 .shelf-arrow.right { right:8px; }
+.music-player.player-placeholder, .video-player.player-placeholder { position:relative; }
+.preview-placeholder { position:relative; display:block; width:100%; height:100%; min-height:inherit; padding:0; overflow:hidden; border:0; border-radius:inherit; background:#08090b; color:#f6f4ef; }
+.preview-placeholder img { display:block; width:100%; height:100%; object-fit:cover; opacity:.84; }
+.preview-placeholder-letter { display:grid; place-items:center; width:100%; height:100%; color:var(--lime); font-size:56px; font-weight:900; }
+.preview-placeholder-overlay { position:absolute; inset:0; display:grid; place-items:center; background:#0008; color:#fff; font-size:16px; font-weight:800; }
+.preview-placeholder:hover .preview-placeholder-overlay { color:var(--lime); }
 .track-grid, .video-grid { display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:2px 44px 12px; }
 .track-grid::-webkit-scrollbar, .video-grid::-webkit-scrollbar { display:none; }
 .track-card { flex:0 0 220px; scroll-snap-align:start; }
