@@ -12,12 +12,14 @@ type YouTubeChannelList = {
   }>;
 };
 
+type YouTubePlaylistItem = {
+  contentDetails?: { videoId?: string };
+  snippet?: { title?: string; description?: string };
+};
+
 type YouTubePlaylistItemsList = {
   nextPageToken?: string;
-  items?: Array<{
-    contentDetails?: { videoId?: string };
-    snippet?: { title?: string; description?: string };
-  }>;
+  items?: YouTubePlaylistItem[];
 };
 
 function parseChannelReference(value: string): ChannelReference | null {
@@ -36,7 +38,7 @@ function parseChannelReference(value: string): ChannelReference | null {
   }
 }
 
-function isShortVideo(item: YouTubePlaylistItemsList["items"] extends Array<infer T> ? T : never) {
+function isShortVideo(item: YouTubePlaylistItem) {
   const text = `${item.snippet?.title ?? ""}\n${item.snippet?.description ?? ""}`;
   return /\b#?(?:shorts?|ytshorts)\b/i.test(text) || /youtube\.com\/shorts\//i.test(text);
 }
