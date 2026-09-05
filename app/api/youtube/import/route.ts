@@ -13,9 +13,10 @@ type YouTubeChannelList = {
 };
 
 type YouTubePlaylistItemsList = {
+  nextPageToken?: string;
   items?: Array<{
     contentDetails?: { videoId?: string };
-    snippet?: { title?: string };
+    snippet?: { title?: string; description?: string };
   }>;
 };
 
@@ -33,6 +34,11 @@ function parseChannelReference(value: string): ChannelReference | null {
   } catch {
     return null;
   }
+}
+
+function isShortVideo(item: YouTubePlaylistItemsList["items"] extends Array<infer T> ? T : never) {
+  const text = `${item.snippet?.title ?? ""}\n${item.snippet?.description ?? ""}`;
+  return /\b#?(?:shorts?|ytshorts)\b/i.test(text) || /youtube\.com\/shorts\//i.test(text);
 }
 
 async function youtubeRequest<T>(resource: string, params: Record<string, string>) {
@@ -81,13 +87,23 @@ export async function POST(request: Request) {
     const uploadsPlaylistId = channels.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
     if (!uploadsPlaylistId) return NextResponse.json({ error: "Der YouTube-Kanal konnte nicht gefunden werden." }, { status: 404 });
 
-    const playlist = await youtubeRequest<YouTubePlaylistItemsList>("playlistItems", {
-      part: "snippet,contentDetails",
-      playlistId: uploadsPlaylistId,
-      maxResults: "10"
-    });
+    const playlistItems: NonNullable<YouTubePlaylistItemsList["items"]> = [];
+    let pageToken: string | undefined;
+    for (let page = 0; page < 5 && playlistItems.length < 250; page += 1) {
+      const params: Record<string, string> = {
+        part: "snippet,contentDetails",
+        playlistId: uploadsPlaylistId,
+        maxResults: "50"
+      };
+      if (pageToken) params.pageToken = pageToken;
+      const playlist = await youtubeRequest<YouTubePlaylistItemsList>("playlistItems", params);
+      playlistItems.push(...(playlist.items ?? []));
+      pageToken = playlist.nextPageToken;
+      if (!pageToken) break;
+    }
 
-    const latestVideos = (playlist.items ?? [])
+    const latestVideos = playlistItems
+      .filter((item) => !isShortVideo(item))
       .map((item) => {
         const id = item.contentDetails?.videoId;
         if (!id) return null;
@@ -97,10 +113,11 @@ export async function POST(request: Request) {
           title: item.snippet?.title?.trim() || null
         };
       })
-      .filter((video): video is { youtube_id: string; youtube_url: string; title: string | null } => Boolean(video));
+      .filter((video): video is { youtube_id: string; youtube_url: string; title: string | null } => Boolean(video))
+      .slice(0, 10);
 
     if (latestVideos.length === 0) {
-      return NextResponse.json({ error: "Auf diesem YouTube-Kanal wurden keine Videos gefunden." }, { status: 404 });
+      return NextResponse.json({ error: "Auf diesem YouTube-Kanal wurden keine passenden Videos gefunden. Shorts werden übersprungen." }, { status: 404 });
     }
 
     const { data: existingVideos, error: existingError } = await admin
@@ -155,7 +172,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      message: `${latestVideos.length} YouTube-Videos wurden importiert.`,
+      message: `${latestVideos.length} YouTube-Videos wurden importiert. Shorts wurden übersprungen.`,
       videos: latestVideos
     });
   } catch (error) {

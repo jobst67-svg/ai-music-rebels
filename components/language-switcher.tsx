@@ -112,7 +112,7 @@ const deToEn: Record<string, string> = {
   "Banner, Bio und Links bleiben sichtbar. Deine Titel und Videos warten gespeichert auf die Reaktivierung.": "Banner, bio and links remain visible. Your tracks and videos stay stored until reactivation.",
   "Nach einem abgelaufenen Abo darf AI Music Rebels mir maximal monatlich eine Erinnerung zur Reaktivierung schicken.": "After an expired subscription, AI Music Rebels may send me at most one reactivation reminder per month.",
   "Deine Videos": "Your videos",
-  "Füge bis zu zehn Videos ein. Beim elften wird das älteste automatisch entfernt.": "Add up to ten videos. When adding an eleventh, the oldest is removed automatically.",
+  "Füge bis zu zehn Videos ein. Beim elften wird das älteste automatisch entfernt. Shorts werden automatisch übersprungen.": "Add up to ten videos. When adding an eleventh, the oldest is removed automatically. Shorts are skipped automatically.",
   "Letzte 10 importieren": "Import latest 10",
   "Wird importiert …": "Importing …",
   "Die letzten 10 YouTube-Videos wurden importiert.": "The latest 10 YouTube videos were imported.",
