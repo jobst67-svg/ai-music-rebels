@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArtistTrack } from "@/components/track-shelf";
 import { ChannelVideo } from "@/components/video-shelf";
 import { PublicProfile } from "@/components/public-profile";
+import { ProfileNav } from "@/components/profile-nav";
 import { supabaseKey, supabaseUrl } from "@/lib/supabase";
 import type { Metadata } from "next";
 
@@ -65,7 +66,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
     image_path: null, banner_path: null, accent_color: "#d9ff3f", spotify_url: null, youtube_url: null, suno_url: null, tiktok_url: null, facebook_url: null, channel_mode: "full"
   } satisfies ArtistProfile : null);
 
-  if (!profile) return <main className="shell page"><nav className="nav"><Link className="brand" href="https://aimusicrebels.com">AI MUSIC <em>REBELS</em></Link></nav><section className="profile"><div className="eyebrow">404</div><h1>Profil nicht gefunden.</h1><p className="lead">Diese Künstlerseite ist noch nicht veröffentlicht oder existiert nicht.</p></section></main>;
+  if (!profile) return <main className="shell page"><ProfileNav /><section className="profile"><div className="eyebrow">404</div><h1>Profil nicht gefunden.</h1><p className="lead">Diese Künstlerseite ist noch nicht veröffentlicht oder existiert nicht.</p></section></main>;
 
   const showPremiumContent = profile.channel_mode === "full";
   const [videos, tracks] = profile.id === "demo" || !showPremiumContent ? [[], []] : await Promise.all([
@@ -78,7 +79,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const structuredData = { "@context": "https://schema.org", "@type": "Person", name, description: profile.bio || profile.tagline || undefined, url: `https://${profile.slug}.aimusicrebels.com`, image: profile.image_path || undefined, sameAs: links.map(([, url]) => url), jobTitle: "Independent AI music artist" };
   return <main className="shell page channel-page">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
-    <nav className="nav"><Link className="brand" href="https://aimusicrebels.com">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><Link href="https://aimusicrebels.com/auth">Account</Link></div></nav>
+    <ProfileNav />
     <article className="channel">
       <div className="channel-banner" style={{ background: profile.banner_path ? undefined : `linear-gradient(120deg, ${profile.accent_color || "#d9ff3f"}, #151a11 45%, #101116)` }}>{profile.banner_path && <img src={profile.banner_path} alt={`${name} Kanalbanner`} />}</div>
       <header className="channel-head"><div className="channel-avatar" style={{ background: `linear-gradient(135deg, ${profile.accent_color || "#d9ff3f"}, #30372c)` }}>{profile.image_path ? <img src={profile.image_path} alt={name} /> : name.slice(0, 1)}</div><div><div className="eyebrow">AI Music Rebel</div><h1>{name}</h1><p className="tagline">{profile.tagline || "Independent AI music artist"}</p>{(profile.genre_primary || profile.genre_secondary) && <div className="genre-tags">{[profile.genre_primary, profile.genre_secondary].filter(Boolean).map((genre) => <span className="genre-pill" key={genre}>{genre}</span>)}</div>}</div></header>
