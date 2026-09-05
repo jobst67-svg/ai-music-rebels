@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { getSupabase, hasSupabaseConfig } from "@/lib/supabase";
-import { LanguageSwitcher, useSiteLocale } from "@/components/language-switcher";
+import { useSiteLocale } from "@/components/language-switcher";
+import { ProfileNav } from "@/components/profile-nav";
 import { SiteFooter } from "@/components/site-footer";
 import styles from "./home.module.css";
 
@@ -40,19 +41,7 @@ export default function HomePage() {
   return (
     <main className={styles.page}>
       <div className={styles.shell}>
-        <nav className={styles.nav}>
-          <Link className={styles.brandLink} href="/"><RebelsLogo /></Link>
-          <div className={styles.navlinks}>
-            <Link className={styles.activeNav} href="/">Home</Link>
-            <a href="#rebels">{english ? "Discover" : "Entdecken"}</a>
-            <Link href="/example-profile">{english ? "Example profile" : "Beispielprofil"}</Link>
-            <Link className={styles.loginLink} href={email ? "/account" : "/login?next=/claim-subdomain"}>{email ? "Account" : english ? "Login" : "Anmelden"}</Link>
-            <LanguageSwitcher />
-            {!email && <Link className={styles.joinButton} href="/register?next=/claim-subdomain">{english ? "Join Now" : "Jetzt mitmachen"}</Link>}
-          </div>
-        </nav>
-
-        <section className={styles.hero}>
+        <ProfileNav variant="home" email={email} />       <section className={styles.hero}>
           <div className={styles.heroCopy}>
             <div className={styles.eyebrow}>{english ? "Independent creators. Real music. Bigger tomorrow." : "Independent Creators. Echte Musik. Größer morgen."}</div>
             <h1><span>{english ? "YOUR MUSIC." : "DEINE MUSIK."}</span><span className={styles.green}>{english ? "YOUR PROFILE." : "DEIN PROFIL."}</span><span>{english ? "YOUR RULES." : "DEINE REGELN."}</span></h1>

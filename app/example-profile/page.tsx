@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { ArtistTrack } from "@/components/track-shelf";
 import { ChannelVideo } from "@/components/video-shelf";

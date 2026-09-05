@@ -7,6 +7,7 @@ import { ChannelVideo, VideoShelf } from "@/components/video-shelf";
 import { getSupabase } from "@/lib/supabase";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SiteFooter } from "@/components/site-footer";
+import { ProfileNav } from "@/components/profile-nav";
 
 type ArtistProfile = {
   id: string;
@@ -63,6 +64,7 @@ export default function AccountPage() {
   const [trackCover, setTrackCover] = useState<string | null>(null);
   const [addingTrack, setAddingTrack] = useState(false);
   const [trackEditorOpen, setTrackEditorOpen] = useState(false);
+  const [platformPickerOpen, setPlatformPickerOpen] = useState(false);
   const [editingTrack, setEditingTrack] = useState<ArtistTrack | null>(null);
   const [editingVideo, setEditingVideo] = useState<ChannelVideo | null>(null);
   const [billingBusy, setBillingBusy] = useState(false);
@@ -351,7 +353,7 @@ export default function AccountPage() {
   const dropzone = (target: ImageTarget, label: string, path: string | null, ref: React.RefObject<HTMLInputElement | null>) => <div className={target === "profile" ? "profile-field" : "wide"}><label>{label}</label><button className={`dropzone ${target === "profile" ? "profile-dropzone" : ""} ${dragging === target ? "dragging" : ""}`} type="button" onClick={() => ref.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(target); }} onDragLeave={() => setDragging(null)} onDrop={(event) => dropImage(event, target)}>{path ? <img src={path} alt={`${label}-Vorschau`} /> : <span>Bild hierher ziehen oder klicken</span>}<small>{uploading === target ? "Wird verkleinert und hochgeladen …" : target === "banner" ? "JPG, PNG oder WebP · automatisch auf max. 1.920 × 800 px verkleinert" : target === "profile" ? "JPG, PNG oder WebP · quadratisch zugeschnitten und auf max. 1.200 × 1.200 px verkleinert" : "JPG, PNG oder WebP · automatisch auf max. 1.600 px verkleinert"}</small></button><input ref={ref} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, target); event.currentTarget.value = ""; }} /></div>;
 
   return <main className="shell page account">
-    <nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><span>{email}</span>{email.toLowerCase() === "jobst67@gmail.com" && <Link href="/admin">Admin</Link>}<LanguageSwitcher /><button className="textbutton" onClick={signOut}>Abmelden</button></div></nav>
+    <ProfileNav variant="account" email={email} isAdmin={email.toLowerCase() === "jobst67@gmail.com"} onSignOut={signOut} />
     <div className="eyebrow">Dein Künstlerbereich</div><h1>Profil gestalten.</h1>
     {!profile ? <section className="card empty"><p>{message}</p><Link className="buttonlink" href="/">Subdomain sichern</Link></section> : <form className="card editor" onSubmit={save}>
       <div className="editorhead"><div><h2>{profile.slug}.aimusicrebels.com</h2><p>Deine Daten speichern wir sofort. Öffentlich wird die Seite erst nach Freischaltung.</p></div><Link className="outline" href="/account/preview">Vorschau</Link></div>
@@ -364,8 +366,7 @@ export default function AccountPage() {
         <div><label htmlFor="genre-primary">Hauptgenre *</label><select id="genre-primary" required value={profile.genre_primary ?? ""} onChange={(e) => update("genre_primary", e.target.value || null)}><option value="">Genre auswählen</option>{genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></div>
         <div><label htmlFor="genre-secondary">Zweitgenre <span className="optional-label">(optional)</span></label><select id="genre-secondary" value={profile.genre_secondary ?? ""} onChange={(e) => update("genre_secondary", e.target.value || null)}><option value="">Kein Zweitgenre</option>{genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></div>
         <div className="wide"><label htmlFor="bio">Bio</label><textarea id="bio" rows={5} value={profile.bio ?? ""} onChange={(e) => update("bio", e.target.value)} placeholder="Erzähl deine Geschichte, deinen Sound und was du machst." /></div>
-        <div className="wide"><label>Wo veröffentlichst du deine Musik?</label><div className="platform-picker">{platforms.map((platform) => <button type="button" key={platform} className={profile.music_platforms.includes(platform) ? "active" : ""} onClick={() => update("music_platforms", profile.music_platforms.includes(platform) ? profile.music_platforms.filter((item) => item !== platform) : [...profile.music_platforms, platform])}>{platform}</button>)}</div></div>
-        <div><label htmlFor="color">Akzentfarbe</label><input id="color" type="color" value={profile.accent_color || "#d9ff3f"} onChange={(e) => update("accent_color", e.target.value)} /></div>
+        <div className="wide platform-editor"><div className="platform-editor-head"><div><label>Wo veröffentlichst du deine Musik?</label><p className="note platform-summary">{profile.music_platforms.length > 0 ? profile.music_platforms.join(" · ") : "Noch keine Plattform ausgewählt"}</p></div><button type="button" className="secondary" onClick={() => setPlatformPickerOpen((open) => !open)}>{platformPickerOpen ? "Plattformauswahl schließen" : "Plattformen ändern"}</button></div>{platformPickerOpen && <div className="platform-picker">{platforms.map((platform) => <button type="button" key={platform} className={profile.music_platforms.includes(platform) ? "active" : ""} onClick={() => update("music_platforms", profile.music_platforms.includes(platform) ? profile.music_platforms.filter((item) => item !== platform) : [...profile.music_platforms, platform])}>{platform}</button>)}</div>}</div>
         <div><label htmlFor="spotify">Spotify-Link</label><input id="spotify" type="url" value={profile.spotify_url ?? ""} onChange={(e) => update("spotify_url", e.target.value)} placeholder="https://open.spotify.com/…" /></div>
         <div><label htmlFor="youtube">YouTube-Kanal-Link</label><input id="youtube" type="url" value={profile.youtube_url ?? ""} onChange={(e) => update("youtube_url", e.target.value)} placeholder="https://youtube.com/@…" /></div>
         <div><label htmlFor="suno">Suno-Link</label><input id="suno" type="url" value={profile.suno_url ?? ""} onChange={(e) => update("suno_url", e.target.value)} placeholder="https://suno.com/…" /></div>

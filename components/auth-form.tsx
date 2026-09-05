@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { getSupabase, hasSupabaseConfig } from "@/lib/supabase";
 import { SiteFooter } from "@/components/site-footer";
+import { ProfileNav } from "@/components/profile-nav";
 
 type AuthMode = "login" | "register";
 
@@ -106,7 +107,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   return <main className="shell auth">
-    <Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link>
+    <ProfileNav variant="standard" />
     <section className="card">
       <h2>{registering ? "Join the rebellion." : "Willkommen zurück."}</h2>
       <p>{registering ? "Erstelle deinen kostenlosen Account und sichere dir deine eigene Subdomain." : "Melde dich an, um dein Künstlerprofil zu verwalten."}</p>

@@ -6,12 +6,21 @@ a { color:inherit; text-decoration:none; }
 .shell { width:min(1160px, calc(100% - 40px)); margin:0 auto; }
 .nav { display:flex; justify-content:space-between; align-items:center; padding:24px 0; font-size:14px; }
 .profile-nav { position:sticky; top:0; z-index:30; margin-bottom:18px; padding:12px 0; background:rgba(16,17,22,.96); backdrop-filter:blur(14px); border-bottom:1px solid var(--line); }
-.profile-brand { display:flex; align-items:center; min-width:0; }
+.profile-brand { display:flex; align-items:center; flex:0 0 auto; min-width:0; }
 .profile-brand img { display:block; width:min(210px, 42vw); height:52px; object-fit:contain; object-position:left center; }
-.profile-nav-actions { display:flex; align-items:center; justify-content:flex-end; gap:9px; }
-.profile-nav-button { display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:10px 14px; border:1px solid var(--lime); border-radius:9px; background:var(--lime); color:#101116; font-size:13px; font-weight:800; transition:transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.profile-nav-actions { display:flex; align-items:center; justify-content:flex-end; gap:9px; min-width:0; }
+.profile-nav-link { display:inline-flex; align-items:center; min-height:32px; padding:7px 9px; border-radius:8px; color:#c5c7cb; font-size:13px; font-weight:700; white-space:nowrap; transition:color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease; }
+.profile-nav-link:hover, .profile-nav-link.active { color:var(--lime); background:#d9ff3f12; transform:translateY(-1px); }
+.profile-nav-link:focus-visible, .profile-nav-button:focus-visible, .profile-nav-join:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+.profile-nav-email { max-width:190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#9ca3a7; font-size:12px; }
+.profile-nav-logout { border:0; background:transparent; cursor:pointer; font:700 13px Arial; }
+.profile-nav-button { display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:10px 14px; border:1px solid var(--lime); border-radius:9px; background:var(--lime); color:#101116; font-size:13px; font-weight:800; white-space:nowrap; transition:transform .18s ease, background .18s ease, box-shadow .18s ease; }
 .profile-nav-button:hover { background:#efff75; color:#101116; transform:translateY(-2px); box-shadow:0 8px 18px #d9ff3f33; }
-.profile-nav-button:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+.profile-nav-join { display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:10px 14px; border:1px solid var(--lime); border-radius:9px; background:var(--lime); color:#101116; font-size:13px; font-weight:800; white-space:nowrap; transition:transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.profile-nav-join:hover { background:#efff75; color:#101116; transform:translateY(-2px); box-shadow:0 8px 18px #d9ff3f33; }
+.language-switcher { display:inline-flex; flex:0 0 auto; }
+.language-switcher select { min-height:34px; padding:7px 24px 7px 9px; border:1px solid #39424a; border-radius:8px; background:#171d22; color:#f6f4ef; font:700 12px Arial; cursor:pointer; }
+.language-switcher select:hover { border-color:var(--lime); color:var(--lime); }
 
 .brand { font-weight:900; letter-spacing:-.06em; font-size:20px; }
 .brand em { color:var(--lime); font-style:normal; }
@@ -68,7 +77,7 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .profile-view-switch button { background:#2a2d34; color:#f6f4ef; padding:10px 14px; border:1px solid #3a3e47; }
 .profile-view-switch button.active { background:var(--lime); color:#111; border-color:var(--lime); }
 .profile-view-note { margin:10px 38px 0; color:var(--muted); font-size:13px; }
-@media (max-width:760px) { .shell { width:min(100% - 28px, 1160px); } .hero { grid-template-columns:1fr; padding-top:30px; } .navlinks { gap:12px; font-size:12px; } .profile-head { align-items:flex-start; flex-direction:column; gap:16px; } .profile-nav { align-items:center; gap:10px; } .profile-brand img { width:150px; height:44px; } .profile-nav-actions { gap:6px; } .profile-nav-button { min-height:34px; padding:8px 9px; font-size:11px; } }
+@media (max-width:760px) { .shell { width:min(100% - 28px, 1160px); } .hero { grid-template-columns:1fr; padding-top:30px; } .navlinks { gap:12px; font-size:12px; } .profile-head { align-items:flex-start; flex-direction:column; gap:16px; } .profile-nav { align-items:center; gap:8px; overflow-x:auto; } .profile-brand img { width:150px; height:44px; } .profile-nav-actions { gap:4px; overflow-x:auto; scrollbar-width:none; } .profile-nav-actions::-webkit-scrollbar { display:none; } .profile-nav-link { padding:6px 7px; font-size:11px; } .profile-nav-button,.profile-nav-join { min-height:32px; padding:7px 8px; font-size:11px; } .profile-nav-email { display:none; } }
 
 .account { max-width:920px; }
 .account > h1 { font-size:clamp(46px,7vw,76px); margin-top:12px; }
@@ -154,6 +163,10 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .track-cover.selected { outline:2px solid var(--lime); outline-offset:2px; }
 .track-title { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:9px; font-size:14px; font-weight:700; }
 .track-card p { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin:5px 0; color:var(--muted); font-size:12px; }
+.platform-editor-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
+.platform-editor-head > div { min-width:0; }
+.platform-summary { margin:5px 0 0; }
+.platform-editor-head > button { flex:0 0 auto; }
 @media (max-width:760px) { .channel-head,.channel-content { padding-left:18px; padding-right:18px; } .channel-head { align-items:flex-start; flex-direction:column; margin-top:-48px; } .channel-avatar { width:108px; height:108px; } .video-grid { grid-template-columns:repeat(2,1fr); } .video-form { grid-template-columns:1fr; } }
 @media (max-width:760px) { .profile-view-switch { margin-left:18px; margin-right:18px; } .profile-view-note { margin-left:18px; margin-right:18px; } }
 @media (max-width:560px) { .free-link-grid { grid-template-columns:repeat(3, minmax(72px, 1fr)); } }

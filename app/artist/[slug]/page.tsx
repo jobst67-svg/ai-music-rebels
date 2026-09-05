@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArtistTrack } from "@/components/track-shelf";
 import { ChannelVideo } from "@/components/video-shelf";
 import { PublicProfile } from "@/components/public-profile";

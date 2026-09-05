@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
+import { ProfileNav } from "@/components/profile-nav";
 
 export default function TermsPage() {
   return <main className="shell legal-page">
-    <nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><Link href="/">← Zur Startseite</Link></nav>
+    <ProfileNav variant="standard" />
     <article className="legal-card">
       <div className="legal-copy de-copy"><div className="eyebrow">Rechtliches</div><h1>Allgemeine Geschäftsbedingungen</h1><p className="note">für AI Music Rebels · Stand: 02.09.2026</p><p>Anbieter: Michael Jobst, Waldweg 3, 91171 Greding, Deutschland · jobst67@gmail.com · 0160 4589605</p>
       <h2>1. Geltungsbereich</h2><p>Diese AGB gelten für die Nutzung von AI Music Rebels und für den Abschluss eines kostenpflichtigen Jahresabonnements für eine Künstlerseite. Das Angebot richtet sich in dieser Fassung an volljährige Kunden mit Wohnsitz, gewöhnlichem Aufenthalt oder Unternehmenssitz in Deutschland. Abweichende Bedingungen des Kunden werden nur Vertragsbestandteil, wenn wir ihrer Geltung ausdrücklich zustimmen.</p>

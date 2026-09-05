@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
+import { ProfileNav } from "@/components/profile-nav";
 
 export default function PrivacyPage() {
-  return <main className="shell legal-page"><nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><Link href="/">← Zur Startseite</Link></nav><article className="legal-card">
+  return <main className="shell legal-page"><ProfileNav variant="standard" /><article className="legal-card">
     <div className="legal-copy de-copy"><div className="eyebrow">Rechtliches</div><h1>Datenschutzerklärung</h1><p className="note">Stand: 02.09.2026</p><h2>1. Verantwortlicher</h2><p>Michael Jobst<br />Waldweg 3, 91171 Greding, Deutschland<br />E-Mail: jobst67@gmail.com<br />Telefon: 0160 4589605</p>
     <h2>2. Verarbeitete Daten</h2><p>Beim Betrieb von AI Music Rebels können insbesondere technische Verbindungs- und Protokolldaten, Kontodaten wie E-Mail-Adresse und Authentifizierungsinformationen, Profilangaben, hochgeladene Bilder, Titel-, Video- und Plattformlinks, Nutzungsdaten sowie Zahlungs- und Transaktionsinformationen verarbeitet werden. Zahlungsdaten selbst werden von Stripe verarbeitet; wir erhalten nur die für die Abonnementverwaltung erforderlichen Status- und Referenzdaten.</p>
     <h2>3. Zwecke und Rechtsgrundlagen</h2><ul><li>Bereitstellung der Seite, Registrierung, Profilverwaltung und Vertragserfüllung: Art. 6 Abs. 1 lit. b DSGVO.</li><li>Zahlungsabwicklung und gesetzliche Aufbewahrung: Art. 6 Abs. 1 lit. b und lit. c DSGVO.</li><li>IT-Sicherheit, Fehleranalyse, Missbrauchsabwehr und technische Stabilität: Art. 6 Abs. 1 lit. f DSGVO.</li><li>Optionale Erinnerungen zur Reaktivierung nach Ablauf eines Abonnements: Ihre Einwilligung bzw. Auswahl im Account, Art. 6 Abs. 1 lit. a DSGVO. Die Auswahl kann jederzeit im Account widerrufen werden.</li></ul>

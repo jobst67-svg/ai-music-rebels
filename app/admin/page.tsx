@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
-import { LanguageSwitcher, useSiteLocale } from "@/components/language-switcher";
+import { useSiteLocale } from "@/components/language-switcher";
+import { ProfileNav } from "@/components/profile-nav";
 
 type Profile = {
   id: string; slug: string; artist_name: string | null; tagline: string | null; genre_primary: string | null; genre_secondary: string | null; bio: string | null;
@@ -90,7 +90,7 @@ export default function AdminPage() {
   }
 
   return <main className="shell page admin-page">
-    <nav className="nav"><Link className="brand" href="/">AI MUSIC <em>REBELS</em></Link><div className="navlinks"><Link href="/account">Account</Link><LanguageSwitcher /></div></nav>
+    <ProfileNav variant="standard" />
     <div className="eyebrow">Administration</div>
     <h1>{english ? "Manage users." : "Nutzer verwalten."}</h1>
     <p className="lead">{english ? "Full moderation access: publish, hide, suspend, warn and permanently remove Rebels." : "Vollständige Moderation: Profile freischalten, ausblenden, sperren, verwarnen und Rebels dauerhaft entfernen."}</p>
