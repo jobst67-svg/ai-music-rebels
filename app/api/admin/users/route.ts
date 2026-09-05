@@ -89,6 +89,7 @@ export async function PATCH(request: Request) {
     if (body.action === "approve") {
       const { data: target, error } = await admin.auth.admin.getUserById(body.userId);
       if (error) throw error;
+      if (!target.user?.email_confirmed_at) return NextResponse.json({ error: "Die E-Mail-Adresse wurde noch nicht bestätigt." }, { status: 400 });
       const banned = Boolean(target.user?.banned_until && target.user.banned_until !== "none" && new Date(target.user.banned_until).getTime() > Date.now());
       if (banned) return NextResponse.json({ error: "Der Nutzer ist noch gesperrt. Entsperre ihn zuerst." }, { status: 400 });
       await updateProfile({ is_published: true, moderation_status: "approved", moderation_note: null });
