@@ -62,7 +62,7 @@ export default function HomePage() {
               <div className={styles.or}><span />{english ? "OR" : "ODER"}<span /></div>
               <Link className={styles.emailButton} href="/auth?next=/claim-subdomain">✉ {english ? "Register with Email" : "Mit E-Mail registrieren"}</Link>
             </div>}
-            <div className={styles.promises}><span>◎ {english ? "Subdomain and free profiles are free forever. Upgrade to Premium anytime." : "Subdomain und Free-Profile dauerhaft kostenlos. Jederzeit auf Premium erweiterbar."}</span><span>▣ {english ? "No credit card required" : "Keine Kreditkarte nötig"}</span></div>
+            <div className={styles.promises}><span>◎ {english ? "Subdomain and free profiles are free forever. Upgrade to Premium anytime." : "Subdomain und Free-Profile dauerhaft kostenlos. Jederzeit auf Premium erweiterbar."}</span></div>
           </div>
           <div className={styles.heroVisual} aria-hidden="true">
             <img className={styles.heroWoman} src="/rebels-hero-woman.webp" alt="" />
