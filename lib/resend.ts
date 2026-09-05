@@ -6,7 +6,7 @@ function getResend() {
   return new Resend(key);
 }
 
-const from = process.env.RESEND_FROM_EMAIL ?? "AI Music Rebels <noreply@vtk-song-studio.com>";
+const from = process.env.RESEND_FROM_EMAIL ?? "AI Music Rebels <info@aimusicrebels.com>";
 const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL ?? "info@aimusicrebels.com";
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" })[character] ?? character);
 
