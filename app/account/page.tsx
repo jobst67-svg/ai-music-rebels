@@ -58,6 +58,7 @@ export default function AccountPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [addingVideo, setAddingVideo] = useState(false);
+  const [importingVideos, setImportingVideos] = useState(false);
   const [trackPlatform, setTrackPlatform] = useState("");
   const [trackTitle, setTrackTitle] = useState("");
   const [trackUrl, setTrackUrl] = useState("");
@@ -233,6 +234,31 @@ export default function AccountPage() {
     setTrackEditorOpen(false);
   }
 
+  async function importLatestVideos() {
+    if (!profile) return;
+    setImportingVideos(true);
+    setMessage("");
+    try {
+      const { data } = await getSupabase().auth.getSession();
+      const response = await fetch("/api/youtube/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.session?.access_token ?? ""}`
+        },
+        body: JSON.stringify({ channelUrl: profile.youtube_url })
+      });
+      const result = await response.json() as { message?: string; error?: string };
+      if (!response.ok) throw new Error(result.error || "YouTube-Videos konnten nicht importiert werden.");
+      await loadVideos(profile.id);
+      setMessage(result.message || "Die letzten 10 YouTube-Videos wurden importiert.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "YouTube-Import fehlgeschlagen.");
+    } finally {
+      setImportingVideos(false);
+    }
+  }
+
   async function saveVideo() {
     if (!profile) return;
     const id = youtubeId(videoUrl);
@@ -252,7 +278,7 @@ export default function AccountPage() {
       if (error) throw error;
       resetVideoEditor();
       await loadVideos(profile.id);
-      setMessage(currentEdit ? "Video geändert." : "Video hinzugefügt. Ab dem sechsten Video wird das älteste automatisch entfernt.");
+      setMessage(currentEdit ? "Video geändert." : "Video hinzugefügt. Ab dem elften Video wird das älteste automatisch entfernt.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Video konnte nicht gespeichert werden.");
     } finally {
@@ -374,7 +400,7 @@ export default function AccountPage() {
         <div className="wide"><label htmlFor="facebook">Facebook-Link</label><input id="facebook" type="url" value={profile.facebook_url ?? ""} onChange={(e) => update("facebook_url", e.target.value)} placeholder="https://facebook.com/…" /></div>
         <label className="wide consent"><input type="checkbox" checked={profile.winback_opt_in} onChange={(event) => update("winback_opt_in", event.target.checked)} /> Nach einem abgelaufenen Abo darf AI Music Rebels mir maximal monatlich eine Erinnerung zur Reaktivierung schicken.</label>
       </div>
-      <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/5</span></div><p>Füge bis zu fünf Videos ein. Beim sechsten wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo} onClick={saveVideo}>{addingVideo ? (editingVideo ? "Wird gespeichert …" : "Wird hinzugefügt …") : editingVideo ? "Videoänderungen speichern" : "Video hinzufügen"}</button>{editingVideo && <button type="button" className="secondary" onClick={resetVideoEditor}>Abbrechen</button>}</div><VideoShelf videos={videos} editable showPlayer={false} onDelete={deleteVideo} onEdit={startVideoEdit} /></section>
+      <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/10</span></div><p>Füge bis zu zehn Videos ein. Beim elften wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo || importingVideos} onClick={saveVideo}>{addingVideo ? (editingVideo ? "Wird gespeichert …" : "Wird hinzugefügt …") : editingVideo ? "Videoänderungen speichern" : "Video hinzufügen"}</button><button type="button" className="secondary" disabled={addingVideo || importingVideos} onClick={() => void importLatestVideos()}>{importingVideos ? "Wird importiert …" : "Letzte 10 importieren"}</button>{editingVideo && <button type="button" className="secondary" onClick={resetVideoEditor}>Abbrechen</button>}</div><VideoShelf videos={videos} editable showPlayer={false} onDelete={deleteVideo} onEdit={startVideoEdit} /></section>
       <section className="track-manager">
         <div className="section-title"><div><div className="eyebrow">Songs</div><h2>Deine Titel</h2></div><span>{tracks.length}/12</span></div>
         <p>Lege Titel für die Plattformen an, die du oben ausgewählt hast. Spotify und SoundCloud spielen direkt auf deiner Künstlerseite. Für Bandcamp fügst du den offiziellen <em>EmbeddedPlayer</em>-Link aus dem Teilen-Menü ein. Ein Klick auf die Karte führt sonst direkt zum Song.</p>
