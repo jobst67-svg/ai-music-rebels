@@ -33,7 +33,8 @@ type ArtistProfile = {
 };
 
 type ImageTarget = "profile" | "banner" | "track";
-const BIO_LIMIT = 2000;\nconst genres = ["Alternative", "Ambient", "Blues", "Classical", "Country", "Dance", "Drum & Bass", "Electronic", "Folk", "Hardstyle", "Hip-Hop", "House", "Indie", "Jazz", "Lo-fi", "Metal", "Phonk", "Pop", "Punk", "R&B", "Rap", "Reggae", "Rock", "Soul", "Techno", "Trap", "Other"];
+const BIO_LIMIT = 2000;
+const genres = ["Alternative", "Ambient", "Blues", "Classical", "Country", "Dance", "Drum & Bass", "Electronic", "Folk", "Hardstyle", "Hip-Hop", "House", "Indie", "Jazz", "Lo-fi", "Metal", "Phonk", "Pop", "Punk", "R&B", "Rap", "Reggae", "Rock", "Soul", "Techno", "Trap", "Other"];
 const platforms = ["Suno", "Udio", "Spotify", "YouTube", "YouTube Music", "SoundCloud", "Bandcamp", "Boomy", "AIVA", "Mubert", "Riffusion", "Andere"];
 
 function youtubeId(value: string) {
