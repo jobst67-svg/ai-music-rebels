@@ -46,7 +46,7 @@ export default function HomePage() {
             <Link className={styles.activeNav} href="/">Home</Link>
             <a href="#rebels">{english ? "Discover" : "Entdecken"}</a>
             <a href="#how">{english ? "How it works" : "So geht's"}</a>
-            <Link href={email ? "/account" : "/auth?next=/claim-subdomain"}>{email ? "Account" : english ? "Login" : "Anmelden"}</Link>
+            <Link className={styles.loginLink} href={email ? "/account" : "/auth?next=/claim-subdomain"}>{email ? "Account" : english ? "Login" : "Anmelden"}</Link>
             <LanguageSwitcher />
             {!email && <Link className={styles.joinButton} href="/auth?next=/claim-subdomain">{english ? "Join Now" : "Jetzt mitmachen"}</Link>}
           </div>
