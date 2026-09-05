@@ -32,7 +32,7 @@ export default function HomePage() {
   async function continueWithGoogle() {
     if (!hasSupabaseConfig) return;
     setAuthBusy(true);
-    const redirectTo = `${window.location.origin}/auth?next=${encodeURIComponent("/claim-subdomain")}`;
+    const redirectTo = `https://aimusicrebels.com/auth?next=${encodeURIComponent("/claim-subdomain")}`;
     const { error } = await getSupabase().auth.signInWithOAuth({ provider:"google", options:{ redirectTo } });
     if (error) { console.error(error); setAuthBusy(false); }
   }
