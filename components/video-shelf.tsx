@@ -9,7 +9,7 @@ export type ChannelVideo = {
   title: string | null;
 };
 
-export function VideoShelf({ videos, editable = false, onDelete, playerKey, activePlayerKey, onPlayerActivate }: { videos: ChannelVideo[]; editable?: boolean; onDelete?: (id: number) => void; playerKey?: string; activePlayerKey?: string | null; onPlayerActivate?: (playerKey: string) => void }) {
+export function VideoShelf({ videos, editable = false, onDelete, onEdit, showPlayer = true, playerKey, activePlayerKey, onPlayerActivate }: { videos: ChannelVideo[]; editable?: boolean; onDelete?: (id: number) => void; onEdit?: (video: ChannelVideo) => void; showPlayer?: boolean; playerKey?: string; activePlayerKey?: string | null; onPlayerActivate?: (playerKey: string) => void }) {
   const [activeId, setActiveId] = useState<number | null>(videos[0]?.id ?? null);
   const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const rail = useRef<HTMLDivElement>(null);
@@ -18,6 +18,7 @@ export function VideoShelf({ videos, editable = false, onDelete, playerKey, acti
   const playerIsActive = !playerKey || activePlayerKey === playerKey;
   const activatePlayer = (autoplay = false) => { if (autoplay) setShouldAutoplay(true); if (playerKey) onPlayerActivate?.(playerKey); };
   const playerSrc = active ? `https://www.youtube-nocookie.com/embed/${active.youtube_id}?rel=0${shouldAutoplay ? "&autoplay=1" : ""}` : "";
+  const cardActionIsEdit = editable && Boolean(onEdit);
 
   if (videos.length === 0) return null;
 
@@ -32,7 +33,14 @@ export function VideoShelf({ videos, editable = false, onDelete, playerKey, acti
       </div>}
       <div className="shelf-rail"><button type="button" className="shelf-arrow left" aria-label="Videos nach links" onClick={() => scrollRail(-1)}>‹</button><div className="video-grid" ref={rail}>
         {videos.map((video) => <article className="video-card" key={video.id}>
-          <button type="button" className={video.id === active?.id ? "video-thumb selected" : "video-thumb"} onClick={() => { setActiveId(video.id); activatePlayer(true); }}>
+          <button type="button" className={video.id === active?.id ? "video-thumb selected" : "video-thumb"} onClick={() => {
+            if (cardActionIsEdit) {
+              onEdit?.(video);
+              return;
+            }
+            setActiveId(video.id);
+            activatePlayer(true);
+          }} aria-label={cardActionIsEdit ? `${video.title || "Video"} bearbeiten` : `${video.title || "Video"} abspielen`}>
             <img src={`https://i.ytimg.com/vi/${video.youtube_id}/hqdefault.jpg`} alt={video.title || "YouTube-Video"} />
             <span className="playmark">▶</span>
           </button>

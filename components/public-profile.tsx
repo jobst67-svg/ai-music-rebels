@@ -27,7 +27,7 @@ function ServiceIcon({ label }: { label: string }) {
   return <span className="service-letter" aria-hidden="true">{label.slice(0, 1).toUpperCase()}</span>;
 }
 
-export function PublicProfile({ profile, name, links, tracks, videos, showViewSwitch = false, initialView }: {
+export function PublicProfile({ profile, name, links, tracks, videos, showViewSwitch = false, initialView, showPlayers = true }: {
   profile: PublicProfile;
   name: string;
   links: [string, string][];
@@ -35,11 +35,13 @@ export function PublicProfile({ profile, name, links, tracks, videos, showViewSw
   videos: ChannelVideo[];
   showViewSwitch?: boolean;
   initialView?: "free" | "premium";
+  showPlayers?: boolean;
 }) {
   const hasPremiumProfile = profile.channel_mode === "full";
   const [view, setView] = useState<"free" | "premium">(initialView ?? (hasPremiumProfile ? "premium" : "free"));
   const visibleTracks = view === "premium" ? tracks : tracks.slice(0, 5);
   const visibleVideos = view === "premium" ? videos : [];
+  const playersEnabled = showPlayers && view === "premium";
   const groupedTracks = useMemo(() => Object.entries(visibleTracks.reduce<Record<string, ArtistTrack[]>>((groups, track) => {
     const key = track.platform.trim() || "Weitere Plattformen";
     (groups[key] ||= []).push(track);
@@ -62,8 +64,8 @@ export function PublicProfile({ profile, name, links, tracks, videos, showViewSw
       <p className="bio">{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p>
       {links.length > 0 && <div className="links">{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer"><ServiceIcon label={label} /><span>{label}</span><span aria-hidden="true">↗</span></a>)}</div>}
       {hasPremiumProfile && <>
-        {groupedTracks.map(([platform, platformTracks]) => <TrackShelf key={platform} tracks={platformTracks} sectionLabel={platform} showPlayer={view === "premium" && ["spotify", "soundcloud", "bandcamp"].includes(platform.toLowerCase())} playerKey={`tracks-${platform.toLowerCase()}`} activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />)}
-        <VideoShelf videos={visibleVideos} playerKey="videos" activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />
+        {groupedTracks.map(([platform, platformTracks]) => <TrackShelf key={platform} tracks={platformTracks} sectionLabel={platform} showPlayer={playersEnabled && ["spotify", "soundcloud", "bandcamp"].includes(platform.toLowerCase())} playerKey={`tracks-${platform.toLowerCase()}`} activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />)}
+        <VideoShelf videos={visibleVideos} showPlayer={playersEnabled} playerKey="videos" activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />
       </>}
     </div>
   </>;

@@ -63,6 +63,8 @@ export default function AccountPage() {
   const [trackCover, setTrackCover] = useState<string | null>(null);
   const [addingTrack, setAddingTrack] = useState(false);
   const [trackEditorOpen, setTrackEditorOpen] = useState(false);
+  const [editingTrack, setEditingTrack] = useState<ArtistTrack | null>(null);
+  const [editingVideo, setEditingVideo] = useState<ChannelVideo | null>(null);
   const [billingBusy, setBillingBusy] = useState(false);
   const profileInput = useRef<HTMLInputElement>(null);
   const bannerInput = useRef<HTMLInputElement>(null);
@@ -193,7 +195,43 @@ export default function AccountPage() {
     if (file) void uploadImage(file, target);
   }
 
-  async function addVideo() {
+  function resetVideoEditor() {
+    setVideoUrl("");
+    setVideoTitle("");
+    setEditingVideo(null);
+  }
+
+  function startVideoEdit(video: ChannelVideo) {
+    setEditingVideo(video);
+    setVideoUrl(video.youtube_url);
+    setVideoTitle(video.title ?? "");
+    setMessage("");
+  }
+
+  function resetTrackEditor() {
+    setTrackPlatform("");
+    setTrackTitle("");
+    setTrackUrl("");
+    setTrackCover(null);
+    setEditingTrack(null);
+  }
+
+  function startTrackEdit(track: ArtistTrack) {
+    setEditingTrack(track);
+    setTrackEditorOpen(true);
+    setTrackPlatform(track.platform);
+    setTrackTitle(track.title);
+    setTrackUrl(track.track_url);
+    setTrackCover(track.cover_path);
+    setMessage("");
+  }
+
+  function closeTrackEditor() {
+    resetTrackEditor();
+    setTrackEditorOpen(false);
+  }
+
+  async function saveVideo() {
     if (!profile) return;
     const id = youtubeId(videoUrl);
     if (!id) {
@@ -205,21 +243,23 @@ export default function AccountPage() {
       const supabase = getSupabase();
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) throw new Error("Bitte melde dich erneut an.");
-      const { error } = await supabase.from("artist_videos").insert({ artist_profile_id: profile.id, user_id: authData.user.id, youtube_url: videoUrl.trim(), youtube_id: id, title: videoTitle.trim() || null });
+      const currentEdit = editingVideo;
+      const { error } = currentEdit
+        ? await supabase.from("artist_videos").update({ youtube_url: videoUrl.trim(), youtube_id: id, title: videoTitle.trim() || null }).eq("id", currentEdit.id).eq("artist_profile_id", profile.id)
+        : await supabase.from("artist_videos").insert({ artist_profile_id: profile.id, user_id: authData.user.id, youtube_url: videoUrl.trim(), youtube_id: id, title: videoTitle.trim() || null });
       if (error) throw error;
-      setVideoUrl("");
-      setVideoTitle("");
+      resetVideoEditor();
       await loadVideos(profile.id);
-      setMessage("Video hinzugefügt. Ab dem sechsten Video wird das älteste automatisch entfernt.");
+      setMessage(currentEdit ? "Video geändert." : "Video hinzugefügt. Ab dem sechsten Video wird das älteste automatisch entfernt.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Video konnte nicht gespeichert werden.");
     } finally {
       setAddingVideo(false);
     }
   }
-
   async function deleteVideo(id: number) {
-    const { error } = await getSupabase().from("artist_videos").delete().eq("id", id);
+    if (!profile) return;
+    const { error } = await getSupabase().from("artist_videos").delete().eq("id", id).eq("artist_profile_id", profile.id);
     if (error) setMessage(error.message);
     else if (profile) void loadVideos(profile.id);
   }
@@ -245,7 +285,7 @@ export default function AccountPage() {
     }
   }
 
-  async function addTrack() {
+  async function saveTrack() {
     if (!profile) return;
     if (!trackPlatform) {
       setMessage("Wähle zuerst eine Musikplattform aus.");
@@ -255,7 +295,7 @@ export default function AccountPage() {
       setMessage("Titel und Link sind erforderlich.");
       return;
     }
-    if (tracks.length >= 12) {
+    if (!editingTrack && tracks.length >= 12) {
       setMessage("Du hast bereits 12 Titel. Entferne zuerst einen Titel, bevor du einen neuen hinzufügst.");
       return;
     }
@@ -264,23 +304,24 @@ export default function AccountPage() {
       const supabase = getSupabase();
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) throw new Error("Bitte melde dich erneut an.");
-      const { error } = await supabase.from("artist_tracks").insert({ artist_profile_id: profile.id, user_id: authData.user.id, platform: trackPlatform, title: trackTitle.trim(), track_url: trackUrl.trim(), cover_path: trackCover });
+      const currentEdit = editingTrack;
+      const { error } = currentEdit
+        ? await supabase.from("artist_tracks").update({ platform: trackPlatform, title: trackTitle.trim(), track_url: trackUrl.trim(), cover_path: trackCover }).eq("id", currentEdit.id).eq("artist_profile_id", profile.id)
+        : await supabase.from("artist_tracks").insert({ artist_profile_id: profile.id, user_id: authData.user.id, platform: trackPlatform, title: trackTitle.trim(), track_url: trackUrl.trim(), cover_path: trackCover });
       if (error) throw error;
-      setTrackTitle("");
-      setTrackUrl("");
-      setTrackCover(null);
+      resetTrackEditor();
       setTrackEditorOpen(false);
       await loadTracks(profile.id);
-      setMessage("Titel hinzugefügt.");
+      setMessage(currentEdit ? "Titel geändert." : "Titel hinzugefügt.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Titel konnte nicht gespeichert werden.");
     } finally {
       setAddingTrack(false);
     }
   }
-
   async function deleteTrack(id: number) {
-    const { error } = await getSupabase().from("artist_tracks").delete().eq("id", id);
+    if (!profile) return;
+    const { error } = await getSupabase().from("artist_tracks").delete().eq("id", id).eq("artist_profile_id", profile.id);
     if (error) setMessage(error.message);
     else if (profile) void loadTracks(profile.id);
   }
@@ -332,12 +373,12 @@ export default function AccountPage() {
         <div className="wide"><label htmlFor="facebook">Facebook-Link</label><input id="facebook" type="url" value={profile.facebook_url ?? ""} onChange={(e) => update("facebook_url", e.target.value)} placeholder="https://facebook.com/…" /></div>
         <label className="wide consent"><input type="checkbox" checked={profile.winback_opt_in} onChange={(event) => update("winback_opt_in", event.target.checked)} /> Nach einem abgelaufenen Abo darf AI Music Rebels mir maximal monatlich eine Erinnerung zur Reaktivierung schicken.</label>
       </div>
-      <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/5</span></div><p>Füge bis zu fünf Videos ein. Beim sechsten wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo} onClick={addVideo}>{addingVideo ? "Wird hinzugefügt …" : "Video hinzufügen"}</button></div><VideoShelf videos={videos} editable onDelete={deleteVideo} /></section>
+      <section className="video-manager"><div className="section-title"><div><div className="eyebrow">YouTube</div><h2>Deine Videos</h2></div><span>{videos.length}/5</span></div><p>Füge bis zu fünf Videos ein. Beim sechsten wird das älteste automatisch entfernt.</p><div className="video-form"><input value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} placeholder="YouTube-Video-Link" /><input value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} placeholder="Titel (optional)" /><button type="button" disabled={addingVideo} onClick={saveVideo}>{addingVideo ? (editingVideo ? "Wird gespeichert …" : "Wird hinzugefügt …") : editingVideo ? "Videoänderungen speichern" : "Video hinzufügen"}</button>{editingVideo && <button type="button" className="secondary" onClick={resetVideoEditor}>Abbrechen</button>}</div><VideoShelf videos={videos} editable showPlayer={false} onDelete={deleteVideo} onEdit={startVideoEdit} /></section>
       <section className="track-manager">
         <div className="section-title"><div><div className="eyebrow">Songs</div><h2>Deine Titel</h2></div><span>{tracks.length}/12</span></div>
         <p>Lege Titel für die Plattformen an, die du oben ausgewählt hast. Spotify und SoundCloud spielen direkt auf deiner Künstlerseite. Für Bandcamp fügst du den offiziellen <em>EmbeddedPlayer</em>-Link aus dem Teilen-Menü ein. Ein Klick auf die Karte führt sonst direkt zum Song.</p>
         {profile.music_platforms.length === 0 ? <p className="note">Wähle oben mindestens eine Musikplattform aus.</p> : <>
-          <button type="button" className="add-track-button" onClick={() => setTrackEditorOpen((open) => !open)}>{trackEditorOpen ? "Eingabe schließen" : "+ Neue Titelkarte"}</button>
+          <button type="button" className="add-track-button" onClick={() => trackEditorOpen ? closeTrackEditor() : setTrackEditorOpen(true)}>{trackEditorOpen ? "Eingabe schließen" : "+ Neue Titelkarte"}</button>
           {trackEditorOpen && <div className="track-editor">
             <div className="track-form">
               <select value={trackPlatform} onChange={(event) => setTrackPlatform(event.target.value)}><option value="">Plattform auswählen</option>{profile.music_platforms.map((platform) => <option key={platform} value={platform}>{platform}</option>)}</select>
@@ -345,10 +386,10 @@ export default function AccountPage() {
               <input className="wide" value={trackUrl} onChange={(event) => setTrackUrl(event.target.value)} placeholder="Direkter Link zum Song" />
               <div className="wide"><label>Cover (optional)</label><button type="button" className={"dropzone track-cover-upload " + (dragging === "track" ? "dragging" : "")} onClick={() => trackCoverInput.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging("track"); }} onDragLeave={() => setDragging(null)} onDrop={(event) => { event.preventDefault(); setDragging(null); const file = event.dataTransfer.files[0]; if (file) void uploadTrackCover(file); }}>{trackCover ? <img src={trackCover} alt="Cover-Vorschau" /> : <span>Cover hierher ziehen oder klicken</span>}<small>{uploading === "track" ? "Cover wird verkleinert …" : "JPG, PNG oder WebP · automatisch auf max. 1.000 px verkleinert"}</small></button><input ref={trackCoverInput} className="fileinput" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadTrackCover(file); event.currentTarget.value = ""; }} /></div>
             </div>
-            <div className="track-add"><button type="button" disabled={addingTrack} onClick={addTrack}>{addingTrack ? "Wird hinzugefügt …" : "Titel hinzufügen"}</button></div>
+            <div className="track-add"><button type="button" disabled={addingTrack} onClick={saveTrack}>{addingTrack ? (editingTrack ? "Wird gespeichert …" : "Wird hinzugefügt …") : editingTrack ? "Titeländerungen speichern" : "Titel hinzufügen"}</button>{editingTrack && <button type="button" className="secondary" onClick={closeTrackEditor}>Abbrechen</button>}</div>
           </div>}
         </>}
-        <TrackShelf tracks={tracks} editable onDelete={deleteTrack} />
+        <TrackShelf tracks={tracks} editable showPlayer={false} onDelete={deleteTrack} onEdit={startTrackEdit} />
       </section>
       <div className="savebar"><p className="note">{message}</p><div className="save-actions"><Link className="outline" href="/account/preview">Profil-Vorschau</Link><button disabled={busy}>{busy ? "Speichert …" : "Änderungen speichern"}</button></div></div>
     </form>}

@@ -37,7 +37,7 @@ function embedForTrack(track: ArtistTrack): EmbeddedTrack | null {
   return null;
 }
 
-export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = true, sectionLabel = "Songs", playerKey, activePlayerKey, onPlayerActivate }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; showPlayer?: boolean; sectionLabel?: string; playerKey?: string; activePlayerKey?: string | null; onPlayerActivate?: (playerKey: string) => void }) {
+export function TrackShelf({ tracks, editable = false, onDelete, onEdit, showPlayer = true, sectionLabel = "Songs", playerKey, activePlayerKey, onPlayerActivate }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; onEdit?: (track: ArtistTrack) => void; showPlayer?: boolean; sectionLabel?: string; playerKey?: string; activePlayerKey?: string | null; onPlayerActivate?: (playerKey: string) => void }) {
   const embeddedTracks = useMemo(() => tracks.map(embedForTrack).filter((track): track is EmbeddedTrack => Boolean(track)), [tracks]);
   const [activeId, setActiveId] = useState<number | null>(embeddedTracks[0]?.id ?? null);
   const [spotifyCovers, setSpotifyCovers] = useState<Record<number, string>>({});
@@ -84,10 +84,18 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
       {tracks.map((track) => {
         const embedded = embedForTrack(track);
         const canPlay = showPlayer && Boolean(embedded);
+        const cardActionIsEdit = editable && Boolean(onEdit);
         return <article className="track-card" key={track.id}>
-        {canPlay ? <button type="button" onClick={() => { setActiveId(track.id); activatePlayer(true); }} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={`${track.title} abspielen`}>
+        {cardActionIsEdit || canPlay ? <button type="button" onClick={() => {
+          if (cardActionIsEdit) {
+            onEdit?.(track);
+            return;
+          }
+          setActiveId(track.id);
+          activatePlayer(true);
+        }} className={`track-cover ${activeTrack?.id === track.id ? "selected" : ""}`} aria-label={cardActionIsEdit ? `${track.title} bearbeiten` : `${track.title} abspielen`}>
           {track.cover_path || spotifyCovers[track.id] ? <img src={track.cover_path || spotifyCovers[track.id]} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
-          <i>▶</i>
+          <i>{cardActionIsEdit ? "✎" : "▶"}</i>
         </button> : <a href={track.track_url} target="_blank" rel="noreferrer" className="track-cover">
           {track.cover_path || spotifyCovers[track.id] ? <img src={track.cover_path || spotifyCovers[track.id]} alt={track.title + " Cover"} /> : <span>{track.title.slice(0, 1)}</span>}
           <i>↗</i>
