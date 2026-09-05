@@ -186,3 +186,8 @@ html[data-locale="en"] .en-copy { display:block; }
 .track-grid::-webkit-scrollbar { display:none; }
 .track-card { flex:0 0 190px; scroll-snap-align:start; }
 @media (max-width:760px) { .track-grid { display:flex; gap:13px; } .track-card { flex:0 0 172px; } }
+
+
+.genre-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.genre-pill { display:inline-flex; align-items:center; border:1px solid color-mix(in srgb, var(--lime) 50%, #3a3e47); border-radius:999px; padding:6px 10px; color:var(--lime); font-size:12px; font-weight:700; }
+.optional-label { color:var(--muted); font-weight:400; }
