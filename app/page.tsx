@@ -60,7 +60,7 @@ export default function HomePage() {
             {email ? <Link className={styles.primaryButton} href="/claim-subdomain">{english ? "Claim your subdomain" : "Subdomain sichern"}</Link> : <div className={styles.signupButtons}>
               <button type="button" className={styles.googleButton} onClick={continueWithGoogle} disabled={authBusy}><span className={styles.googleMark}>G</span>{authBusy ? (english ? "Connecting …" : "Verbinden …") : (english ? "Continue with Google" : "Mit Google registrieren")}</button>
               <div className={styles.or}><span />{english ? "OR" : "ODER"}<span /></div>
-              <Link className={styles.emailButton} href="/auth?next=/claim-subdomain">✉ {english ? "Register with Email" : "Mit E-Mail registrieren"}</Link>
+              <Link className={styles.emailButton} href="/register?next=/claim-subdomain">✉ {english ? "Register with Email" : "Mit E-Mail registrieren"}</Link>
             </div>}
             <div className={styles.promises}><span>◎ {english ? "Subdomain and free profiles are free forever. Upgrade to Premium anytime." : "Subdomain und Free-Profile dauerhaft kostenlos. Jederzeit auf Premium erweiterbar."}</span></div>
           </div>
@@ -78,7 +78,7 @@ export default function HomePage() {
           <div className={styles.rail} ref={rail}>
             {rebels.map((artist) => <a className={styles.artistCard} href={`https://${artist.slug}.aimusicrebels.com`} onClick={(event) => { if (window.location.hostname.endsWith(".vercel.app")) { event.preventDefault(); window.location.assign(`/artist/${artist.slug}`); } }} key={artist.id}><div className={styles.avatar}>{artist.image_path ? <img src={artist.image_path} alt="" /> : <span>{(artist.artist_name || "R").slice(0,1)}</span>}</div><strong>{artist.artist_name || artist.slug}</strong><small>{artist.tagline || "AI Music"}</small></a>)}
             {rebels.length === 0 && <div className={styles.emptyCard}><div className={styles.avatar}><span>⚡</span></div><strong>{english ? "The first Rebels are coming." : "Die ersten Rebellen kommen."}</strong><small>{english ? "Your profile can be one of them." : "Dein Profil kann dazugehören."}</small></div>}
-            <Link className={`${styles.artistCard} ${styles.claimCard}`} href="/auth?next=/claim-subdomain"><div className={styles.plus}>+</div><strong>{english ? "Claim your own profile" : "Hol dir dein eigenes Profil"}</strong><small>Join the rebellion</small></Link>
+            <Link className={`${styles.artistCard} ${styles.claimCard}`} href="/register?next=/claim-subdomain"><div className={styles.plus}>+</div><strong>{english ? "Claim your own profile" : "Hol dir dein eigenes Profil"}</strong><small>Join the rebellion</small></Link>
           </div>
         </section>
 
@@ -91,7 +91,7 @@ export default function HomePage() {
 
         <section className={styles.rebellionFooter}>
           <div className={styles.footerIdentity}><RebelsLogo footer /><p>{english ? "Independent artists. A louder tomorrow." : "Independent Artists. Eine lautere Zukunft."}</p></div>
-          <Link className={styles.rebellionCta} href="/auth?next=/claim-subdomain"><img className={styles.rebellionCtaImage} src="/rebellion-cta.png" alt={english ? "Join the rebellion" : "Der Rebellion beitreten"} /></Link>
+          <Link className={styles.rebellionCta} href="/register?next=/claim-subdomain"><img className={styles.rebellionCtaImage} src="/rebellion-cta.png" alt={english ? "Join the rebellion" : "Der Rebellion beitreten"} /></Link>
         </section>
       </div>
       <SiteFooter />
