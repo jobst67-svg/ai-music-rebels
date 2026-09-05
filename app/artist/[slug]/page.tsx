@@ -82,7 +82,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
     <article className="channel">
       <div className="channel-banner" style={{ background: profile.banner_path ? undefined : `linear-gradient(120deg, ${profile.accent_color || "#d9ff3f"}, #151a11 45%, #101116)` }}>{profile.banner_path && <img src={profile.banner_path} alt={`${name} Kanalbanner`} />}</div>
       <header className="channel-head"><div className="channel-avatar" style={{ background: `linear-gradient(135deg, ${profile.accent_color || "#d9ff3f"}, #30372c)` }}>{profile.image_path ? <img src={profile.image_path} alt={name} /> : name.slice(0, 1)}</div><div><div className="eyebrow">AI Music Rebel</div><h1>{name}</h1><p className="tagline">{profile.tagline || "Independent AI music artist"}</p>{(profile.genre_primary || profile.genre_secondary) && <div className="genre-tags">{[profile.genre_primary, profile.genre_secondary].filter(Boolean).map((genre) => <span className="genre-pill" key={genre}>{genre}</span>)}</div>}</div></header>
-      <PublicProfile profile={profile} name={name} links={links} tracks={tracks} videos={videos} />
+      <PublicProfile profile={profile} name={name} links={links} tracks={tracks} videos={videos} showViewSwitch={false} />
     </article>
   </main>;
 }
