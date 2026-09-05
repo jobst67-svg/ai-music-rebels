@@ -9,6 +9,13 @@ import styles from "./home.module.css";
 
 type Rebel = { id:string; slug:string; artist_name:string|null; image_path:string|null; tagline:string|null };
 
+function RebelsLogo({ footer = false }: { footer?: boolean }) {
+  return <span className={footer ? styles.footerBrand : styles.brandMark}>
+    <span className={styles.logoAi}>AI</span><span className={styles.logoMusic}>MUSIC</span><span className={styles.logoRebels}>REBELS</span>
+    <small>MUSIC HAS NO BORDERS</small>
+  </span>;
+}
+
 export default function HomePage() {
   const locale = useSiteLocale();
   const english = locale === "en";
@@ -37,7 +44,7 @@ export default function HomePage() {
     <main className={styles.page}>
       <div className={styles.shell}>
         <nav className={styles.nav}>
-          <Link className={styles.brand} href="/">AI MUSIC <em>REBELS</em><small>MUSIC HAS NO BORDERS</small></Link>
+          <Link className={styles.brandLink} href="/"><RebelsLogo /></Link>
           <div className={styles.navlinks}>
             <Link className={styles.activeNav} href="/">Home</Link>
             <a href="#rebels">{english ? "Discover" : "Entdecken"}</a>
@@ -65,12 +72,12 @@ export default function HomePage() {
 
         <section id="rebels" className={styles.rebelsSection}>
           <div className={styles.sectionHead}>
-            <div><h2>{english ? "NEWEST " : "NEUESTE "}<em>{english ? "REBELS" : "REBELLEN"}</em></h2><p>{english ? "The latest artists to join the rebellion." : "Die neuesten Artists der Rebellion."}</p></div>
+            <div><h2><span>{english ? "NEWEST " : "NEUESTE "}</span><em>{english ? "REBELS" : "REBELLEN"}</em></h2><p>{english ? "The latest artists to join the rebellion." : "Die neuesten Artists der Rebellion."}</p></div>
             <div className={styles.sectionActions}><span>{english ? "Swipe to discover" : "Wischen zum Entdecken"}</span><div className={styles.arrows}><button type="button" onClick={() => rail.current?.scrollBy({left:-520,behavior:"smooth"})}>‹</button><button type="button" onClick={() => rail.current?.scrollBy({left:520,behavior:"smooth"})}>›</button></div></div>
           </div>
           <div className={styles.rail} ref={rail}>
             {rebels.map((artist) => <a className={styles.artistCard} href={`https://${artist.slug}.aimusicrebels.com`} key={artist.id}><div className={styles.avatar}>{artist.image_path ? <img src={artist.image_path} alt="" /> : <span>{(artist.artist_name || "R").slice(0,1)}</span>}</div><strong>{artist.artist_name || artist.slug}</strong><small>{artist.tagline || "AI Music"}</small></a>)}
-            {rebels.length === 0 && <div className={styles.emptyCard}><span>⚡</span><strong>{english ? "The first Rebels are coming." : "Die ersten Rebellen kommen."}</strong><small>{english ? "Your profile can be one of them." : "Dein Profil kann dazugehören."}</small></div>}
+            {rebels.length === 0 && <div className={styles.emptyCard}><div className={styles.avatar}><span>⚡</span></div><strong>{english ? "The first Rebels are coming." : "Die ersten Rebellen kommen."}</strong><small>{english ? "Your profile can be one of them." : "Dein Profil kann dazugehören."}</small></div>}
             <Link className={`${styles.artistCard} ${styles.claimCard}`} href="/auth?next=/claim-subdomain"><div className={styles.plus}>+</div><strong>{english ? "Claim your own profile" : "Hol dir dein eigenes Profil"}</strong><small>Join the rebellion</small></Link>
           </div>
         </section>
@@ -83,8 +90,8 @@ export default function HomePage() {
         </section>
 
         <section className={styles.rebellionFooter}>
-          <div><div className={styles.footerBrand}>AI MUSIC <em>REBELS</em><small>MUSIC HAS NO BORDERS</small></div><p>{english ? "Independent artists. A louder tomorrow." : "Independent Artists. Eine lautere Zukunft."}</p></div>
-          <Link href="/auth?next=/claim-subdomain">{english ? "JOIN THE REBELLION." : "JOIN THE REBELLION."}</Link>
+          <div><RebelsLogo footer /><p>{english ? "Independent artists. A louder tomorrow." : "Independent Artists. Eine lautere Zukunft."}</p></div>
+          <Link className={styles.rebellionCta} href="/auth?next=/claim-subdomain"><span>JOIN THE REBELLION.</span><small>AIMUSICREBELS.COM</small></Link>
         </section>
       </div>
       <SiteFooter />
