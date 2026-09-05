@@ -91,6 +91,8 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .outline, .buttonlink { display:inline-block; border:1px solid #444955; color:#f6f4ef; padding:11px 14px; border-radius:10px; font-weight:700; font-size:13px; }
 .buttonlink { background:var(--lime); color:#111; border:0; margin-top:12px; }
 .editgrid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+.profile-details { display:grid; gap:15px; align-content:start; }
+.bio-field .field-counter { margin:6px 0 0; color:var(--muted); font-size:12px; text-align:right; }
 .wide { grid-column:1 / -1; }
 .savebar { display:flex; align-items:center; justify-content:space-between; gap:16px; border-top:1px solid var(--line); margin-top:28px; padding-top:20px; }
 .textbutton { background:transparent; color:#c5c7cb; font-weight:400; padding:0; }

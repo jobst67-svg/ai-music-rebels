@@ -33,7 +33,7 @@ type ArtistProfile = {
 };
 
 type ImageTarget = "profile" | "banner" | "track";
-const genres = ["Alternative", "Ambient", "Blues", "Classical", "Country", "Dance", "Drum & Bass", "Electronic", "Folk", "Hardstyle", "Hip-Hop", "House", "Indie", "Jazz", "Lo-fi", "Metal", "Phonk", "Pop", "Punk", "R&B", "Rap", "Reggae", "Rock", "Soul", "Techno", "Trap", "Other"];
+const BIO_LIMIT = 2000;\nconst genres = ["Alternative", "Ambient", "Blues", "Classical", "Country", "Dance", "Drum & Bass", "Electronic", "Folk", "Hardstyle", "Hip-Hop", "House", "Indie", "Jazz", "Lo-fi", "Metal", "Phonk", "Pop", "Punk", "R&B", "Rap", "Reggae", "Rock", "Soul", "Techno", "Trap", "Other"];
 const platforms = ["Suno", "Udio", "Spotify", "YouTube", "YouTube Music", "SoundCloud", "Bandcamp", "Boomy", "AIVA", "Mubert", "Riffusion", "Andere"];
 
 function youtubeId(value: string) {
@@ -96,7 +96,7 @@ export default function AccountPage() {
       if (error) setMessage(error.message);
       else if (!data) setMessage("Du hast noch keine Subdomain reserviert.");
       else {
-        setProfile(data);
+        setProfile({ ...data, bio: data.bio ? data.bio.slice(0, BIO_LIMIT) : data.bio });
         const checkout = new URLSearchParams(window.location.search).get("checkout");
         setMessage(checkout === "success" ? "Zahlungsdaten gespeichert. Dein kostenloser Monat läuft jetzt." : checkout === "cancelled" ? "Die Zahlung wurde abgebrochen. Du kannst sie jederzeit erneut starten." : "");
         void loadVideos(data.id);
@@ -387,11 +387,13 @@ export default function AccountPage() {
       <div className="editgrid">
         {dropzone("banner", "Kanalbanner", profile.banner_path, bannerInput)}
         {dropzone("profile", "Kanalbild", profile.image_path, profileInput)}
-        <div><label htmlFor="artist">Künstlername</label><input id="artist" value={profile.artist_name ?? ""} onChange={(e) => update("artist_name", e.target.value)} /></div>
-        <div><label htmlFor="tagline">Kurzer Satz</label><input id="tagline" value={profile.tagline ?? ""} onChange={(e) => update("tagline", e.target.value)} placeholder="Dein Sound in einem Satz" /></div>
-        <div><label htmlFor="genre-primary">Hauptgenre *</label><select id="genre-primary" required value={profile.genre_primary ?? ""} onChange={(e) => update("genre_primary", e.target.value || null)}><option value="">Genre auswählen</option>{genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></div>
-        <div><label htmlFor="genre-secondary">Zweitgenre <span className="optional-label">(optional)</span></label><select id="genre-secondary" value={profile.genre_secondary ?? ""} onChange={(e) => update("genre_secondary", e.target.value || null)}><option value="">Kein Zweitgenre</option>{genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></div>
-        <div className="wide"><label htmlFor="bio">Bio</label><textarea id="bio" rows={5} value={profile.bio ?? ""} onChange={(e) => update("bio", e.target.value)} placeholder="Erzähl deine Geschichte, deinen Sound und was du machst." /></div>
+        <div className="profile-details">
+          <div><label htmlFor="artist">Künstlername</label><input id="artist" value={profile.artist_name ?? ""} onChange={(e) => update("artist_name", e.target.value)} /></div>
+          <div><label htmlFor="tagline">Kurzer Satz</label><input id="tagline" value={profile.tagline ?? ""} onChange={(e) => update("tagline", e.target.value)} placeholder="Dein Sound in einem Satz" /></div>
+          <div><label htmlFor="genre-primary">Hauptgenre (Pflichtfeld)</label><select id="genre-primary" required value={profile.genre_primary ?? ""} onChange={(e) => update("genre_primary", e.target.value || null)}><option value="">Genre auswählen</option>{genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></div>
+          <div><label htmlFor="genre-secondary">Zweitgenre <span className="optional-label">(optional)</span></label><select id="genre-secondary" value={profile.genre_secondary ?? ""} onChange={(e) => update("genre-secondary", e.target.value || null)}><option value="">Kein Zweitgenre</option>{genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></div>
+        </div>
+        <div className="wide bio-field"><label htmlFor="bio">Bio</label><textarea id="bio" rows={5} maxLength={BIO_LIMIT} value={profile.bio ?? ""} onChange={(e) => update("bio", e.target.value.slice(0, BIO_LIMIT))} placeholder="Erzähl deine Geschichte, deinen Sound und was du machst." /><p className="field-counter">{(profile.bio ?? "").length}/{BIO_LIMIT}</p></div>
         <div className="wide platform-editor"><div className="platform-editor-head"><div><label>Wo veröffentlichst du deine Musik?</label><p className="note platform-summary">{profile.music_platforms.length > 0 ? profile.music_platforms.join(" · ") : "Noch keine Plattform ausgewählt"}</p></div><button type="button" className="secondary" onClick={() => setPlatformPickerOpen((open) => !open)}>{platformPickerOpen ? "Plattformen und Links schließen" : "Plattformen und Links ändern"}</button></div>{platformPickerOpen && <><div className="platform-picker">{platforms.map((platform) => <button type="button" key={platform} className={profile.music_platforms.includes(platform) ? "active" : ""} onClick={() => update("music_platforms", profile.music_platforms.includes(platform) ? profile.music_platforms.filter((item) => item !== platform) : [...profile.music_platforms, platform])}>{platform}</button>)}</div><div className="platform-link-grid">
           <div><label htmlFor="spotify">Spotify-Link</label><input id="spotify" type="url" value={profile.spotify_url ?? ""} onChange={(e) => update("spotify_url", e.target.value)} placeholder="https://open.spotify.com/…" /></div>
           <div><label htmlFor="youtube">YouTube-Kanal-Link</label><input id="youtube" type="url" value={profile.youtube_url ?? ""} onChange={(e) => update("youtube_url", e.target.value)} placeholder="https://youtube.com/@…" /></div>
