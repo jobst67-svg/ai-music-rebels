@@ -52,7 +52,7 @@ export default function AdminPage() {
   useEffect(() => { void load(); }, []);
 
   async function action(user: AdminUser, kind: Action) {
-    let message: string | undefined;
+    let message: string | null = null;
     if (kind === "warn") {
       message = window.prompt(english ? `Warning for ${user.email}. Enter the reason:` : `Verwarnung für ${user.email}. Grund eingeben:`);
       if (!message?.trim()) return;
