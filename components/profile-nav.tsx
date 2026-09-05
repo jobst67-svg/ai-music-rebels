@@ -58,8 +58,8 @@ export function ProfileNav({
       {isAdmin && <Link className="profile-nav-link" href="/admin">Admin</Link>}
       <Link className="profile-nav-link" href={resolvedAccountHref}>{resolvedAccountLabel}</Link>
       {isAccount && onSignOut && <button type="button" className="profile-nav-link profile-nav-logout" onClick={onSignOut}>{english ? "Sign out" : "Abmelden"}</button>}
-      <LanguageSwitcher />
       {!isAccount && !email && <Link className="profile-nav-join" href="/register?next=/claim-subdomain">{english ? "Join Now" : "Jetzt mitmachen"}</Link>}
+      <LanguageSwitcher />
     </div>}
   </nav>;
 }

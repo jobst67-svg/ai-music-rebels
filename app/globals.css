@@ -238,3 +238,11 @@ html[data-locale="en"] .en-copy { display:block; }
 .genre-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
 .genre-pill { display:inline-flex; align-items:center; border:1px solid color-mix(in srgb, var(--lime) 50%, #3a3e47); border-radius:999px; padding:6px 10px; color:var(--lime); font-size:12px; font-weight:700; }
 .optional-label { color:var(--muted); font-weight:400; }
+
+@media (max-width:900px) and (min-width:761px) {
+  .profile-brand img { width:160px; height:44px; }
+  .profile-nav-actions { gap:3px; }
+  .profile-nav-link { min-height:30px; padding:5px 6px; font-size:11px; }
+  .profile-nav-button, .profile-nav-join { min-height:32px; padding:7px 9px; font-size:11px; }
+  .language-switcher select { min-height:32px; padding:6px 20px 6px 7px; font-size:11px; }
+}
