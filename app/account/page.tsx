@@ -13,6 +13,8 @@ type ArtistProfile = {
   slug: string;
   artist_name: string | null;
   tagline: string | null;
+  genre_primary: string | null;
+  genre_secondary: string | null;
   bio: string | null;
   image_path: string | null;
   banner_path: string | null;
@@ -30,6 +32,7 @@ type ArtistProfile = {
 };
 
 type ImageTarget = "profile" | "banner" | "track";
+const genres = ["Alternative", "Ambient", "Blues", "Classical", "Country", "Dance", "Drum & Bass", "Electronic", "Folk", "Hardstyle", "Hip-Hop", "House", "Indie", "Jazz", "Lo-fi", "Metal", "Phonk", "Pop", "Punk", "R&B", "Rap", "Reggae", "Rock", "Soul", "Techno", "Trap", "Other"];
 const platforms = ["Suno", "Udio", "Spotify", "YouTube", "YouTube Music", "SoundCloud", "Bandcamp", "Boomy", "AIVA", "Mubert", "Riffusion", "Andere"];
 
 function youtubeId(value: string) {
@@ -84,7 +87,7 @@ export default function AccountPage() {
         return;
       }
       setEmail(authData.user.email ?? "");
-      const { data, error } = await supabase.from("artist_profiles").select("id,slug,artist_name,tagline,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url,music_platforms,channel_mode,billing_status,stripe_customer_id,winback_opt_in").eq("user_id", authData.user.id).maybeSingle();
+      const { data, error } = await supabase.from("artist_profiles").select("id,slug,artist_name,tagline,genre_primary,genre_secondary,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url,music_platforms,channel_mode,billing_status,stripe_customer_id,winback_opt_in").eq("user_id", authData.user.id).maybeSingle();
       if (error) setMessage(error.message);
       else if (!data) setMessage("Du hast noch keine Subdomain reserviert.");
       else {
@@ -105,10 +108,14 @@ export default function AccountPage() {
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!profile) return;
+    if (!profile.genre_primary) {
+      setMessage("Bitte wähle ein Hauptgenre aus.");
+      return;
+    }
     setBusy(true);
     setMessage("");
     const { error } = await getSupabase().from("artist_profiles").update({
-      artist_name: profile.artist_name, tagline: profile.tagline, bio: profile.bio, image_path: profile.image_path, banner_path: profile.banner_path,
+      artist_name: profile.artist_name, tagline: profile.tagline, genre_primary: profile.genre_primary, genre_secondary: profile.genre_secondary, bio: profile.bio, image_path: profile.image_path, banner_path: profile.banner_path,
       accent_color: profile.accent_color, spotify_url: profile.spotify_url, youtube_url: profile.youtube_url, suno_url: profile.suno_url, tiktok_url: profile.tiktok_url, facebook_url: profile.facebook_url, music_platforms: profile.music_platforms, winback_opt_in: profile.winback_opt_in
     }).eq("id", profile.id);
     setBusy(false);
@@ -313,6 +320,8 @@ export default function AccountPage() {
         {dropzone("profile", "Kanalbild", profile.image_path, profileInput)}
         <div><label htmlFor="artist">Künstlername</label><input id="artist" value={profile.artist_name ?? ""} onChange={(e) => update("artist_name", e.target.value)} /></div>
         <div><label htmlFor="tagline">Kurzer Satz</label><input id="tagline" value={profile.tagline ?? ""} onChange={(e) => update("tagline", e.target.value)} placeholder="Dein Sound in einem Satz" /></div>
+        <div><label htmlFor="genre-primary">Hauptgenre *</label><select id="genre-primary" required value={profile.genre_primary ?? ""} onChange={(e) => update("genre_primary", e.target.value || null)}><option value="">Genre auswählen</option>{genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></div>
+        <div><label htmlFor="genre-secondary">Zweitgenre <span className="optional-label">(optional)</span></label><select id="genre-secondary" value={profile.genre_secondary ?? ""} onChange={(e) => update("genre_secondary", e.target.value || null)}><option value="">Kein Zweitgenre</option>{genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></div>
         <div className="wide"><label htmlFor="bio">Bio</label><textarea id="bio" rows={5} value={profile.bio ?? ""} onChange={(e) => update("bio", e.target.value)} placeholder="Erzähl deine Geschichte, deinen Sound und was du machst." /></div>
         <div className="wide"><label>Wo veröffentlichst du deine Musik?</label><div className="platform-picker">{platforms.map((platform) => <button type="button" key={platform} className={profile.music_platforms.includes(platform) ? "active" : ""} onClick={() => update("music_platforms", profile.music_platforms.includes(platform) ? profile.music_platforms.filter((item) => item !== platform) : [...profile.music_platforms, platform])}>{platform}</button>)}</div></div>
         <div><label htmlFor="color">Akzentfarbe</label><input id="color" type="color" value={profile.accent_color || "#d9ff3f"} onChange={(e) => update("accent_color", e.target.value)} /></div>

@@ -37,7 +37,7 @@ function embedForTrack(track: ArtistTrack): EmbeddedTrack | null {
   return null;
 }
 
-export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = true }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; showPlayer?: boolean }) {
+export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = true, sectionLabel = "Songs" }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; showPlayer?: boolean; sectionLabel?: string }) {
   const embeddedTracks = useMemo(() => tracks.map(embedForTrack).filter((track): track is EmbeddedTrack => Boolean(track)), [tracks]);
   const [activeId, setActiveId] = useState<number | null>(embeddedTracks[0]?.id ?? null);
   const [spotifyCovers, setSpotifyCovers] = useState<Record<number, string>>({});
@@ -64,7 +64,7 @@ export function TrackShelf({ tracks, editable = false, onDelete, showPlayer = tr
   if (tracks.length === 0) return null;
 
   return <section className="track-shelf">
-    <div className="section-title"><div><div className="eyebrow">Songs</div><h2>Ausgewählte Titel</h2></div><span>{tracks.length}</span></div>
+    <div className="section-title"><div><div className="eyebrow">{sectionLabel}</div><h2>Ausgewählte Titel</h2></div><span>{tracks.length}</span></div>
     {showPlayer && activeTrack && <div className={`music-player ${activeTrack.kind}`}>
       <iframe src={activeTrack.embedUrl} title={`${activeTrack.title} ${activeTrack.platform} player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
     </div>}

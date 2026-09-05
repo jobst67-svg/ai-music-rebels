@@ -180,3 +180,14 @@ html[data-locale="en"] .en-copy { display:block; }
 .admin-profile-grid b { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
 .admin-wide { grid-column:1 / -1; }
 @media (max-width:640px) { .site-footer,.admin-user-head { align-items:flex-start; flex-direction:column; } .site-footer > div { flex-wrap:wrap; } .admin-actions { justify-content:flex-start; } .admin-profile-grid { grid-template-columns:1fr; } }
+
+/* Platform-specific horizontal carousels */
+.track-grid { display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:2px 2px 12px; }
+.track-grid::-webkit-scrollbar { display:none; }
+.track-card { flex:0 0 190px; scroll-snap-align:start; }
+@media (max-width:760px) { .track-grid { display:flex; gap:13px; } .track-card { flex:0 0 172px; } }
+
+
+.genre-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.genre-pill { display:inline-flex; align-items:center; border:1px solid color-mix(in srgb, var(--lime) 50%, #3a3e47); border-radius:999px; padding:6px 10px; color:var(--lime); font-size:12px; font-weight:700; }
+.optional-label { color:var(--muted); font-weight:400; }
