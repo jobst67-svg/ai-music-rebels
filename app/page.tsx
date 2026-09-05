@@ -72,7 +72,7 @@ export default function HomePage() {
 
         <section id="rebels" className={styles.rebelsSection}>
           <div className={styles.sectionHead}>
-            <div><h2><span>MEET THE</span><em>REBELS</em></h2><p>{english ? "The latest artists to join the rebellion." : "Die neuesten Artists der Rebellion."}</p></div>
+            <div><p>{english ? "The latest artists to join the rebellion." : "Die neuesten Artists der Rebellion."}</p></div>
             <div className={styles.sectionActions}><span>{english ? "Swipe to discover" : "Wischen zum Entdecken"}</span><div className={styles.arrows}><button type="button" onClick={() => rail.current?.scrollBy({left:-520,behavior:"smooth"})}>‹</button><button type="button" onClick={() => rail.current?.scrollBy({left:520,behavior:"smooth"})}>›</button></div></div>
           </div>
           <div className={styles.rail} ref={rail}>
