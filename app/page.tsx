@@ -32,7 +32,7 @@ export default function HomePage() {
   async function continueWithGoogle() {
     if (!hasSupabaseConfig) return;
     setAuthBusy(true);
-    const redirectTo = `https://aimusicrebels.com/auth?next=${encodeURIComponent("/claim-subdomain")}`;
+    const redirectTo = `https://aimusicrebels.com/register?next=${encodeURIComponent("/claim-subdomain")}`;
     const { error } = await getSupabase().auth.signInWithOAuth({ provider:"google", options:{ redirectTo } });
     if (error) { console.error(error); setAuthBusy(false); }
   }
@@ -46,9 +46,9 @@ export default function HomePage() {
             <Link className={styles.activeNav} href="/">Home</Link>
             <a href="#rebels">{english ? "Discover" : "Entdecken"}</a>
             <a href="#how">{english ? "How it works" : "So geht's"}</a>
-            <Link className={styles.loginLink} href={email ? "/account" : "/auth?next=/claim-subdomain"}>{email ? "Account" : english ? "Login" : "Anmelden"}</Link>
+            <Link className={styles.loginLink} href={email ? "/account" : "/login?next=/claim-subdomain"}>{email ? "Account" : english ? "Login" : "Anmelden"}</Link>
             <LanguageSwitcher />
-            {!email && <Link className={styles.joinButton} href="/auth?next=/claim-subdomain">{english ? "Join Now" : "Jetzt mitmachen"}</Link>}
+            {!email && <Link className={styles.joinButton} href="/register?next=/claim-subdomain">{english ? "Join Now" : "Jetzt mitmachen"}</Link>}
           </div>
         </nav>
 

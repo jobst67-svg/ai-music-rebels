@@ -83,7 +83,7 @@ export default function AccountPage() {
       const supabase = getSupabase();
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) {
-        window.location.href = "/auth?next=/account";
+        window.location.href = "/login?next=/account";
         return;
       }
       setEmail(authData.user.email ?? "");
