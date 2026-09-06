@@ -77,6 +77,12 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   if (profile.slug === "voitto-tai-kooma") {
     const spotifyTracks = tracks.filter((track) => track.platform.toLowerCase() === "spotify");
     const otherTracks = tracks.filter((track) => track.platform.toLowerCase() !== "spotify");
+    const socialIcon = (label: string) => {
+      const key = label.toLowerCase();
+      const glyph = key === "spotify" ? "●" : key === "youtube" ? "▶" : key === "suno" ? "S" : key === "tiktok" ? "♪" : "f";
+      const background = key === "spotify" ? "#1ed760" : key === "youtube" ? "#ff0033" : key === "suno" ? "#d9ff3f" : key === "tiktok" ? "#111" : "#1877f2";
+      return <span className={styles.socialIcon} style={{ backgroundColor: background, color: key === "suno" ? "#101116" : "#fff" }}>{glyph}</span>;
+    };
     return <main className={`shell page ${styles.page}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
       <ProfileNav />
@@ -87,17 +93,18 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           <div className={styles.titleBlock}><div className={styles.kicker}>AI Music Rebel</div><h1 className={styles.name}>{name}</h1><p className={styles.tagline}>{profile.tagline || "Independent AI music artist"}</p><div className={styles.genres}>{[profile.genre_primary,profile.genre_secondary].filter(Boolean).map((genre)=><span key={genre}>{genre}</span>)}</div></div>
         </header>
         <div className={styles.body}>
-          <nav className={styles.sideNav}><a href="#profile">Profile</a><a href="#tracks">Selected Tracks</a><a href="#videos">Videos</a><a href="#links">Links</a></nav>
+          <nav className={styles.sideNav}><a href="#profile">Profile</a><a href="#tracks">Selected Tracks</a><a href="#suno">Suno</a><a href="#spotify">Spotify</a></nav>
           <div className={styles.main}>
-            <section className={styles.section} id="profile"><h2>About</h2><p className={styles.bio}>{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p><p className={styles.quote}>No trends. No niches. Just whatever hits.</p></section>
-            {spotifyTracks.length>0&&<section className={styles.section} id="tracks"><TrackShelf tracks={spotifyTracks} sectionLabel="Spotify" showPlayer={true}/></section>}
-            {otherTracks.length>0&&<section className={styles.section}><TrackShelf tracks={otherTracks} sectionLabel="More music" showPlayer={false}/></section>}
-            {videos.length>0&&<section className={styles.section} id="videos"><VideoShelf videos={videos} showPlayer={true}/></section>}
+            <section className={styles.section} id="profile"><h2>About</h2><p className={styles.bio}>{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p><p className={styles.quote}>Independent sound. Real ideas. No permission needed.</p></section>
+            {videos.length>0&&<section className={styles.section} id="videos"><VideoShelf videos={videos} showPlayer={false}/></section>}
+            {spotifyTracks.length>0&&<section className={styles.section} id="tracks"><TrackShelf tracks={spotifyTracks} sectionLabel="Selected Tracks" heading="Selected Tracks" showPlayer={false}/></section>}
+            {otherTracks.length>0&&<section className={styles.section} id="suno"><TrackShelf tracks={otherTracks} sectionLabel="Suno" heading="Suno" showPlayer={false}/></section>}
           </div>
           <aside className={styles.right}>
-            <div className={styles.panel}><p className={styles.panelTitle}>Profile</p><span className={styles.badge}>Premium profile</span></div>
-            <div className={styles.panel} id="links"><p className={styles.panelTitle}>Listen & follow</p><div className={styles.socials}>{links.map(([label,url])=><a href={url} key={label} target="_blank" rel="noreferrer"><span>{label}</span><span>↗</span></a>)}</div></div>
-            <div className={styles.panel}><p className={styles.panelTitle}>Manifesto</p><p className={styles.motto}>“I don't chase trends. I make the music anyway.”</p></div>
+            <div className={styles.panel}><p className={styles.panelTitle}>Profile</p><span className={styles.badge}>Premiumprofil</span></div>
+            <div className={styles.panel} id="links"><p className={styles.panelTitle}>Listen &amp; follow</p><div className={styles.socialIcons}>{links.map(([label,url])=><a href={url} key={label} target="_blank" rel="noreferrer" aria-label={label}>{socialIcon(label)}</a>)}</div></div>
+            <div className={styles.stats}><div><strong>{links.length}</strong><span>Links</span></div><div><strong>{tracks.length}</strong><span>Tracks</span></div><div><strong>{videos.length}</strong><span>Videos</span></div></div>
+            <div className={styles.panel}><p className={styles.motto}>“{profile.tagline || "Social Media Punk"}”</p></div>
           </aside>
         </div>
       </article>
