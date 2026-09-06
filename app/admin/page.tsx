@@ -88,13 +88,30 @@ export default function AdminPage() {
   }
 
   async function sendMail() {
-    if (!mailTo.trim()) { setMailStatus(english ? "Enter a recipient email address first." : "Bitte zuerst eine Empfänger-E-Mail-Adresse eingeben."); return; }
+    const recipients = mailTo.split(/[,;\n]+/).map((value) => value.trim()).filter(Boolean);
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (recipients.length === 0) { setMailStatus(english ? "Enter at least one recipient email address first." : "Bitte zuerst mindestens eine Empfänger-E-Mail-Adresse eingeben."); return; }
+    if (recipients.length > 50) { setMailStatus(english ? "Please send no more than 50 addresses per batch." : "Bitte höchstens 50 Adressen pro Durchgang senden."); return; }
+    const invalid = recipients.filter((recipient) => !emailPattern.test(recipient));
+    if (invalid.length > 0) { setMailStatus(`${english ? "Invalid address" : "Ungültige Adresse"}: ${invalid.join(", ")}`); return; }
     setMailBusy(true); setMailStatus("");
+    let sent = 0;
+    const failed: string[] = [];
     try {
-      const response = await fetch("/api/admin/send-email", { method: "POST", headers: await authHeaders(), body: JSON.stringify({ to: mailTo, subject: mailSubject, html: mailHtml }) });
-      const result = await response.json() as { message?: string; error?: string };
-      if (!response.ok) throw new Error(result.error || (english ? "Email could not be sent." : "E-Mail konnte nicht gesendet werden."));
-      setMailStatus(result.message || (english ? "Email sent." : "E-Mail wurde gesendet."));
+      for (const [index, recipient] of recipients.entries()) {
+        setMailStatus(`${english ? "Sending" : "Sende"} ${index + 1}/${recipients.length}: ${recipient}`);
+        try {
+          const response = await fetch("/api/admin/send-email", { method: "POST", headers: await authHeaders(), body: JSON.stringify({ to: recipient, subject: mailSubject, html: mailHtml }) });
+          const result = await response.json() as { message?: string; error?: string };
+          if (!response.ok) throw new Error(result.error || (english ? "Email could not be sent." : "E-Mail konnte nicht gesendet werden."));
+          sent += 1;
+        } catch (error) {
+          failed.push(`${recipient}: ${error instanceof Error ? error.message : (english ? "Send failed." : "Versand fehlgeschlagen.")}`);
+        }
+      }
+      setMailStatus(failed.length > 0
+        ? `${english ? `${sent} sent, ${failed.length} failed` : `${sent} gesendet, ${failed.length} fehlgeschlagen`}: ${failed.join(" · ")}`
+        : (english ? `${sent} email${sent === 1 ? "" : "s"} sent individually.` : `${sent} E-Mail${sent === 1 ? "" : "s"} einzeln gesendet.`));
     } catch (error) { setMailStatus(error instanceof Error ? error.message : (english ? "Email could not be sent." : "E-Mail konnte nicht gesendet werden.")); }
     finally { setMailBusy(false); }
   }
@@ -198,11 +215,11 @@ export default function AdminPage() {
       <div className="section-title"><div><div className="eyebrow">E-Mail</div><h2>{english ? "Send an invitation" : "Einladung senden"}</h2></div><span>{english ? "Admin only" : "Nur für Admins"}</span></div>
       <p>{english ? "Enter the address, adjust the subject or HTML if needed, and send the prepared message." : "E-Mail-Adresse eintragen, Betreff oder HTML bei Bedarf anpassen und die vorbereitete Nachricht senden."}</p>
       <div className="admin-mail-presets" role="tablist" aria-label={english ? "Email language" : "E-Mail-Sprache"}>
-        <button type="button" className={`admin-mail-preset ${mailLanguage === "de" ? "active" : ""}`} aria-selected={mailLanguage === "de"} onClick={() => selectMailLanguage("de")}>Deutsch</button>
-        <button type="button" className={`admin-mail-preset ${mailLanguage === "en" ? "active" : ""}`} aria-selected={mailLanguage === "en"} onClick={() => selectMailLanguage("en")}>English</button>
+        <button type="button" className={`admin-mail-preset ${mailLanguage === "de" ? "active" : ""}`} aria-selected={mailLanguage === "de"} disabled={mailBusy} onClick={() => selectMailLanguage("de")}>Deutsch</button>
+        <button type="button" className={`admin-mail-preset ${mailLanguage === "en" ? "active" : ""}`} aria-selected={mailLanguage === "en"} disabled={mailBusy} onClick={() => selectMailLanguage("en")}>English</button>
       </div>
       <div className="editgrid">
-        <div className="wide"><label htmlFor="admin-mail-to">{english ? "Recipient email" : "Empfänger-E-Mail"}</label><input id="admin-mail-to" type="email" value={mailTo} onChange={(event) => setMailTo(event.target.value)} placeholder="name@example.com" /></div>
+        <div className="wide"><label htmlFor="admin-mail-to">{english ? "Recipient email(s)" : "Empfänger-E-Mail(s)"}</label><input id="admin-mail-to" type="text" inputMode="email" value={mailTo} onChange={(event) => setMailTo(event.target.value)} placeholder="name@example.com, second@example.com" /><p className="note admin-mail-recipient-help">{english ? "Separate multiple addresses with commas, semicolons or line breaks. They are sent individually, max. 50 per batch." : "Mehrere Adressen mit Komma, Semikolon oder Zeilenumbruch trennen. Sie werden einzeln gesendet, maximal 50 pro Durchgang."}</p></div>
         <div className="wide"><label htmlFor="admin-mail-subject">{english ? "Subject" : "Betreff"}</label><input id="admin-mail-subject" value={mailSubject} onChange={(event) => setMailSubject(event.target.value)} /></div>
         <div className="wide"><label htmlFor="admin-mail-html">HTML</label><textarea id="admin-mail-html" className="admin-mail-html" rows={18} value={mailHtml} onChange={(event) => setMailHtml(event.target.value)} spellCheck={false} /></div>
       </div>
