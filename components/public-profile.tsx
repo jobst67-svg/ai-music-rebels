@@ -15,6 +15,19 @@ type PublicProfile = {
   channel_mode: "full" | "basic";
 };
 
+function spotifyEmbedForProfile(value: string | null) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.hostname !== "open.spotify.com" && url.hostname !== "www.open.spotify.com") return null;
+    const [kind, id] = url.pathname.split("/").filter(Boolean);
+    if (!["artist", "track", "album", "playlist", "episode", "show"].includes(kind) || !/^[A-Za-z0-9]+$/.test(id ?? "")) return null;
+    return `https://open.spotify.com/embed/${kind}/${id}?utm_source=generator`;
+  } catch {
+    return null;
+  }
+}
+
 function ServiceIcon({ label }: { label: string }) {
   const name = label.toLowerCase();
   if (name === "spotify") return <svg className="service-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1ed760" /><path d="M6.5 9.1c3.7-1 7.7-.7 10.9.9M7.5 12.6c2.9-.7 6-.5 8.6.7M8.4 15.8c2.1-.4 4.3-.2 6.2.5" fill="none" stroke="#101116" strokeWidth="1.7" strokeLinecap="round" /></svg>;
@@ -51,6 +64,8 @@ export function PublicProfile({ profile, name, links, tracks, videos, showViewSw
   const activePlayerKey = firstPlayerKey ? `tracks-${firstPlayerKey.toLowerCase()}` : visibleVideos.length > 0 ? "videos" : null;
   const [selectedPlayerKey, setSelectedPlayerKey] = useState<string | null>(null);
   const currentPlayerKey = selectedPlayerKey ?? activePlayerKey;
+  const spotifyUrl = links.find(([label]) => label.toLowerCase() === "spotify")?.[1] ?? null;
+  const spotifyEmbedUrl = spotifyEmbedForProfile(spotifyUrl);
 
   return <>
     {showViewSwitch ? <>
@@ -64,7 +79,13 @@ export function PublicProfile({ profile, name, links, tracks, videos, showViewSw
       <p className="bio">{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p>
       {links.length > 0 && <div className="links">{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer"><ServiceIcon label={label} /><span>{label}</span><span aria-hidden="true">↗</span></a>)}</div>}
       {hasPremiumProfile && <>
-        {groupedTracks.map(([platform, platformTracks]) => <TrackShelf key={platform} tracks={platformTracks} sectionLabel={platform} showPlayer={playersEnabled && ["spotify", "soundcloud", "bandcamp"].includes(platform.toLowerCase())} playerKey={`tracks-${platform.toLowerCase()}`} activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />)}
+        {playersEnabled && spotifyEmbedUrl && <section className="profile-spotify-player" aria-label="Spotify Player">
+          <div className="section-title"><div><div className="eyebrow">Spotify</div><h2>Direkt anhören</h2></div></div>
+          <div className="music-player spotify spotify-compact">
+            <iframe src={spotifyEmbedUrl} title={`${name} Spotify Player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+          </div>
+        </section>}
+        {groupedTracks.map(([platform, platformTracks]) => <TrackShelf key={platform} tracks={platformTracks} sectionLabel={platform} showPlayer={playersEnabled && platform.toLowerCase() !== "spotify" && ["soundcloud", "bandcamp"].includes(platform.toLowerCase())} playerKey={`tracks-${platform.toLowerCase()}`} activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />)}
         <VideoShelf videos={visibleVideos} showPlayer={playersEnabled} playerKey="videos" activePlayerKey={currentPlayerKey} onPlayerActivate={setSelectedPlayerKey} />
       </>}
     </div>
