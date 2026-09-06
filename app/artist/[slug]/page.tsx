@@ -73,6 +73,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
   const structuredData = { "@context": "https://schema.org", "@type": "Person", name, description: profile.bio || profile.tagline || undefined, url: `https://${profile.slug}.aimusicrebels.com`, image: profile.image_path || undefined, sameAs: links.map(([, url]) => url), jobTitle: "Independent AI music artist" };
   return <main className="shell page channel-page">
+    <style>{`@media (max-width:760px){.channel-banner{height:auto!important;min-height:0!important;overflow:hidden!important;background:#000}.channel-banner img{display:block!important;width:100%!important;height:auto!important;max-height:none!important;object-fit:contain!important;object-position:center center!important}}`}</style>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
     <ProfileNav />
     <article className="channel">
