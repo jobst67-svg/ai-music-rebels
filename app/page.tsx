@@ -8,7 +8,7 @@ import { ProfileNav } from "@/components/profile-nav";
 import { SiteFooter } from "@/components/site-footer";
 import styles from "./home.module.css";
 
-type Rebel = { id:string; slug:string; artist_name:string|null; image_path:string|null; tagline:string|null };
+type Rebel = { id:string; slug:string; artist_name:string|null; image_path:string|null; genre_primary:string|null; genre_secondary:string|null };
 
 function RebelsLogo({ footer = false }: { footer?: boolean }) {
   return <img className={footer ? styles.footerLogoImage : styles.headerLogoImage} src="/ai-music-rebels-logo.webp" alt="AI Music Rebels" />;
@@ -26,7 +26,7 @@ export default function HomePage() {
     if (!hasSupabaseConfig) return;
     const supabase = getSupabase();
     supabase.auth.getUser().then(({data}) => setEmail(data.user?.email ?? null));
-    supabase.from("artist_profiles").select("id,slug,artist_name,image_path,tagline").eq("is_published",true).order("updated_at",{ascending:false}).limit(10)
+    supabase.from("artist_profiles").select("id,slug,artist_name,image_path,genre_primary,genre_secondary").eq("is_published",true).order("updated_at",{ascending:false}).limit(10)
       .then(({data}) => setRebels((data as Rebel[]|null) ?? []));
   }, []);
 
@@ -65,7 +65,10 @@ export default function HomePage() {
             <div className={styles.sectionActions}><span>{english ? "Swipe to discover" : "Wischen zum Entdecken"}</span><div className={styles.arrows}><button type="button" onClick={() => rail.current?.scrollBy({left:-520,behavior:"smooth"})}>‹</button><button type="button" onClick={() => rail.current?.scrollBy({left:520,behavior:"smooth"})}>›</button></div></div>
           </div>
           <div className={styles.rail} ref={rail}>
-            {rebels.map((artist) => <a className={styles.artistCard} href={`https://${artist.slug}.aimusicrebels.com`} onClick={(event) => { if (window.location.hostname.endsWith(".vercel.app")) { event.preventDefault(); window.location.assign(`/artist/${artist.slug}`); } }} key={artist.id}><div className={styles.avatar}>{artist.image_path ? <img src={artist.image_path} alt="" /> : <span>{(artist.artist_name || "R").slice(0,1)}</span>}</div><strong>{artist.artist_name || artist.slug}</strong><small>{artist.tagline || "AI Music"}</small></a>)}
+            {rebels.map((artist) => {
+              const genres = [artist.genre_primary, artist.genre_secondary].filter(Boolean).join(" · ") || "AI Music";
+              return <a className={styles.artistCard} href={`https://${artist.slug}.aimusicrebels.com`} onClick={(event) => { if (window.location.hostname.endsWith(".vercel.app")) { event.preventDefault(); window.location.assign(`/artist/${artist.slug}`); } }} key={artist.id}><div className={styles.avatar}>{artist.image_path ? <img src={artist.image_path} alt="" /> : <span>{(artist.artist_name || "R").slice(0,1)}</span>}</div><strong>{artist.artist_name || artist.slug}</strong><small>{genres}</small></a>;
+            })}
             {rebels.length === 0 && <div className={styles.emptyCard}><div className={styles.avatar}><span>⚡</span></div><strong>{english ? "The first Rebels are coming." : "Die ersten Rebellen kommen."}</strong><small>{english ? "Your profile can be one of them." : "Dein Profil kann dazugehören."}</small></div>}
             <Link className={`${styles.artistCard} ${styles.claimCard}`} href="/register?next=/claim-subdomain"><div className={styles.plus}>+</div><strong>{english ? "Claim your own profile" : "Hol dir dein eigenes Profil"}</strong><small>Join the rebellion</small></Link>
           </div>
