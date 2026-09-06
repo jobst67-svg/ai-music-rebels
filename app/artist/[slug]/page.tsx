@@ -73,7 +73,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
   const structuredData = { "@context": "https://schema.org", "@type": "Person", name, description: profile.bio || profile.tagline || undefined, url: `https://${profile.slug}.aimusicrebels.com`, image: profile.image_path || undefined, sameAs: links.map(([, url]) => url), jobTitle: "Independent AI music artist" };
   return <main className="shell page channel-page">
-    <style>{`@media (max-width:760px){.channel-banner{height:auto!important;min-height:0!important;overflow:hidden!important;background:#000}.channel-banner img{display:block!important;width:100%!important;height:auto!important;max-height:none!important;object-fit:contain!important;object-position:center center!important}}`}</style>
+    <style>{`@media (max-width:760px){.channel-banner{height:auto!important;min-height:0!important;overflow:visible!important;background:#000;border-radius:18px!important}.channel-banner img{display:block!important;width:100%!important;height:auto!important;max-height:none!important;object-fit:contain!important;object-position:center center!important;border-radius:18px!important}.channel-head{position:relative!important;margin-top:0!important;padding-top:18px!important}.channel-avatar{position:relative!important;top:auto!important;left:auto!important;transform:none!important;margin:-58px 0 14px 18px!important;z-index:5!important;flex:0 0 auto!important}.channel-avatar img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important}}`}</style>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
     <ProfileNav />
     <article className="channel">
