@@ -13,3 +13,33 @@
 @media(max-width:900px){.body{grid-template-columns:minmax(0,1fr) 220px}.sideNav{display:none}.hero{min-height:0}.hero img{height:auto;aspect-ratio:16/7;object-fit:cover}.identity{margin-top:-54px}.avatar{width:118px;height:118px}}
 @media(max-width:680px){.page{width:min(100% - 16px,1280px)!important;padding-bottom:32px!important}.frame{border-radius:16px}.hero{overflow:hidden;background:#080a0d}.hero img{display:block;width:100%;height:auto;aspect-ratio:auto;max-height:none;object-fit:contain;object-position:center top}.hero::after{background:linear-gradient(180deg,rgba(0,0,0,0) 72%,rgba(7,8,10,.72) 100%)}.identity{display:grid;grid-template-columns:82px minmax(0,1fr);align-items:end;column-gap:14px;row-gap:4px;margin-top:-38px;padding:0 16px 18px}.avatar{grid-row:1/4;width:82px;height:82px;margin:0;border-width:4px}.titleBlock{min-width:0;padding:14px 0 0}.kicker{font-size:9px;letter-spacing:.13em}.name{font-size:clamp(30px,9.5vw,40px)!important;line-height:1!important;letter-spacing:-.05em!important;overflow-wrap:anywhere}.tagline{font-size:14px;line-height:1.3}.genres{grid-column:1/-1;margin-top:8px;gap:6px}.genres span{padding:6px 10px;font-size:11px}.body{display:block;padding:18px 16px 26px}.main{width:100%;min-width:0}.section{padding-bottom:22px;margin-bottom:22px}.section h2{font-size:22px}.bio{font-size:15px;line-height:1.65}.quote{font-size:14px;line-height:1.55}.right{margin-top:22px}.panel{margin-bottom:10px;padding:14px}.socials{grid-template-columns:1fr}.socials a{min-height:46px;padding:12px 13px}.badge{font-size:11px}.motto{font-size:14px}.main :global(.track-shelf),.main :global(.video-shelf){max-width:100%;overflow:hidden}.main :global(.section-title){align-items:flex-start;gap:10px}.main :global(.section-title h2){font-size:22px}.main :global(.track-grid){scroll-snap-type:x proximity}.main :global(.track-card){min-width:136px}.main :global(.music-player),.main :global(.video-player){width:100%;max-width:100%}}
 @media(max-width:420px){.identity{grid-template-columns:74px minmax(0,1fr);column-gap:12px;margin-top:-32px;padding-left:14px;padding-right:14px}.avatar{width:74px;height:74px}.name{font-size:30px!important}.body{padding-left:14px;padding-right:14px}.socials a{font-size:12px}}
+
+
+/* Voitto profile: compact showcase layout */
+.socialIcons{display:flex;align-items:center;gap:10px}
+.socialIcons a{display:inline-flex;align-items:center;justify-content:center}
+.socialIcon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:13px;font-weight:900;line-height:1}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.stats>div{display:grid;place-items:center;gap:2px;padding:10px 4px;border:1px solid #292d34;border-radius:10px;background:#12151a}
+.stats strong{font-size:17px;color:#f6f4ef}.stats span{font-size:9px;color:#8f949d}
+.main :global(.track-shelf),.main :global(.video-shelf){margin-top:18px}
+.main :global(.section-title){padding-bottom:8px;margin-bottom:10px}
+.main :global(.section-title h2){font-size:18px;margin-top:3px}
+.main :global(.section-title .eyebrow){font-size:8px}
+.main :global(.track-grid){display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:2px 0 10px;overflow:visible}
+.main :global(.video-grid){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:2px 0 10px;overflow:visible}
+.main :global(.track-card),.main :global(.video-card){min-width:0;flex:initial}
+.main :global(.track-title),.main :global(.video-card p){font-size:10px;margin-top:5px}
+.main :global(.track-card p){font-size:9px;margin:3px 0}
+.main :global(.track-cover),.main :global(.video-thumb){border-radius:9px}
+.main :global(.track-cover i){opacity:.9;inset:auto 5px 5px auto;width:22px;height:22px;border-radius:50%;background:#25282e;font-size:12px}
+.main :global(.video-thumb .playmark){font-size:15px}
+.main :global(.shelf-arrow){width:24px;height:24px;font-size:17px;top:calc(50% - 18px)}
+@media(max-width:680px){
+  .main :global(.track-grid){grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+  .main :global(.video-grid){grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+  .main :global(.track-title),.main :global(.video-card p){font-size:8px}
+  .main :global(.track-card p){font-size:8px}
+  .socialIcons{gap:7px}
+  .socialIcon{width:24px;height:24px;font-size:12px}
+}
