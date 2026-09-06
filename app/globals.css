@@ -206,6 +206,14 @@ html[data-locale="en"] .en-copy { display:block; }
 .admin-profile-grid p { display:grid; gap:4px; color:#c8cad0; overflow-wrap:anywhere; font-size:13px; }
 .admin-profile-grid b { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
 .admin-wide { grid-column:1 / -1; }
+.admin-mail { margin:28px 0 42px; padding:22px; }
+.admin-mail .section-title { margin-bottom:8px; }
+.admin-mail .section-title h2 { margin:0; }
+.admin-mail .section-title > span { color:var(--muted); font-size:12px; }
+.admin-mail-html { min-height:360px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; line-height:1.5; }
+.admin-mail-actions { display:flex; align-items:center; flex-wrap:wrap; gap:14px; margin-top:16px; }
+.admin-mail-actions .note { margin:0; }
+.admin-mail-preview { display:block; width:100%; min-height:520px; margin-top:16px; border:1px solid var(--line); border-radius:10px; background:#061014; }
 @media (max-width:640px) { .site-footer,.admin-user-head { align-items:flex-start; flex-direction:column; } .site-footer > div { flex-wrap:wrap; } .admin-actions { justify-content:flex-start; } .admin-profile-grid { grid-template-columns:1fr; } }
 
 /* Horizontal profile carousels */
