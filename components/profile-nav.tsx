@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LanguageSwitcher, useSiteLocale } from "@/components/language-switcher";
+import styles from "./profile-nav.module.css";
 
 type NavVariant = "home" | "standard" | "profile" | "account";
 
@@ -26,12 +27,9 @@ export function ProfileNav({
   const resolvedAccountHref = accountHref || (email ? "/account" : "/login?next=/claim-subdomain");
   const resolvedAccountLabel = accountLabel || (email ? "Account" : english ? "Sign in" : "Anmelden");
 
-  return <nav className={`nav profile-nav ${isAccount ? "profile-nav-account" : ""}`}>
-    <Link className="profile-brand" href="/" aria-label="AI Music Rebels Startseite">
-      <img src="/ai-music-rebels-logo.webp" alt="AI Music Rebels" />
-    </Link>
-    <div className="profile-nav-actions">
-      <Link className="profile-nav-link active" href="/">{english ? "Home" : "Home"}</Link>
+  const menuItems = (
+    <>
+      <Link className="profile-nav-link active" href="/">Home</Link>
       <Link className="profile-nav-link" href="/#rebels">{english ? "Discover" : "Entdecken"}</Link>
       <Link className="profile-nav-link" href="/example-profile">{english ? "Example profile" : "Beispielprofil"}</Link>
       <Link className="profile-nav-link" href={resolvedAccountHref}>{resolvedAccountLabel}</Link>
@@ -39,6 +37,29 @@ export function ProfileNav({
       {isAccount && onSignOut && <button type="button" className="profile-nav-link profile-nav-logout" onClick={onSignOut}>{english ? "Sign out" : "Abmelden"}</button>}
       {!isAccount && !email && <Link className="profile-nav-join" href="/register?next=/claim-subdomain">{english ? "Join Now" : "Jetzt mitmachen"}</Link>}
       <LanguageSwitcher />
+    </>
+  );
+
+  return <nav className={`nav profile-nav ${isAccount ? "profile-nav-account" : ""}`}>
+    <Link className="profile-brand" href="/" aria-label="AI Music Rebels Startseite">
+      <img src="/ai-music-rebels-logo.webp" alt="AI Music Rebels" />
+    </Link>
+
+    <div className={`profile-nav-actions ${styles.desktopActions}`}>
+      {menuItems}
     </div>
+
+    <details className={styles.mobileMenu}>
+      <summary className={styles.mobileSummary} aria-label={english ? "Open menu" : "Menü öffnen"}>
+        <span className={styles.burger} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+      </summary>
+      <div className={styles.mobilePanel}>
+        {menuItems}
+      </div>
+    </details>
   </nav>;
 }
