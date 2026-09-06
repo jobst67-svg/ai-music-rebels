@@ -20,6 +20,11 @@ type DemoProfile = {
 type Warning = { message: string; created_at: string };
 type AdminUser = { id: string; email: string; created_at: string; last_sign_in_at: string | null; email_confirmed_at: string | null; banned_until: string | null; profile: Profile | null; warning_count: number; latest_warning: Warning | null };
 type Action = "approve" | "unpublish" | "ban" | "unban" | "kick" | "warn" | "cancel_subscription";
+type MailLanguage = "de" | "en";
+
+function defaultMailSubject(english: boolean) {
+  return english ? "Claim your free artist profile on AI Music Rebels" : "Sichere dir dein kostenloses Künstlerprofil bei AI Music Rebels";
+}
 
 function defaultMailHtml(english: boolean) {
   return english ? `<!doctype html>
@@ -63,7 +68,8 @@ export default function AdminPage() {
   const [status, setStatus] = useState(english ? "Loading …" : "Wird geladen …");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [mailTo, setMailTo] = useState("");
-  const [mailSubject, setMailSubject] = useState(english ? "Claim your free artist profile on AI Music Rebels" : "Sichere dir dein kostenloses Künstlerprofil bei AI Music Rebels");
+  const [mailLanguage, setMailLanguage] = useState<MailLanguage>(english ? "en" : "de");
+  const [mailSubject, setMailSubject] = useState(defaultMailSubject(english));
   const [mailHtml, setMailHtml] = useState(() => defaultMailHtml(english));
   const [mailBusy, setMailBusy] = useState(false);
   const [mailStatus, setMailStatus] = useState("");
@@ -91,6 +97,14 @@ export default function AdminPage() {
       setMailStatus(result.message || (english ? "Email sent." : "E-Mail wurde gesendet."));
     } catch (error) { setMailStatus(error instanceof Error ? error.message : (english ? "Email could not be sent." : "E-Mail konnte nicht gesendet werden.")); }
     finally { setMailBusy(false); }
+  }
+
+  function selectMailLanguage(language: MailLanguage) {
+    const nextEnglish = language === "en";
+    setMailLanguage(language);
+    setMailSubject(defaultMailSubject(nextEnglish));
+    setMailHtml(defaultMailHtml(nextEnglish));
+    setMailStatus("");
   }
 
   async function load() {
@@ -183,6 +197,10 @@ export default function AdminPage() {
     <section className="card admin-mail">
       <div className="section-title"><div><div className="eyebrow">E-Mail</div><h2>{english ? "Send an invitation" : "Einladung senden"}</h2></div><span>{english ? "Admin only" : "Nur für Admins"}</span></div>
       <p>{english ? "Enter the address, adjust the subject or HTML if needed, and send the prepared message." : "E-Mail-Adresse eintragen, Betreff oder HTML bei Bedarf anpassen und die vorbereitete Nachricht senden."}</p>
+      <div className="admin-mail-presets" role="tablist" aria-label={english ? "Email language" : "E-Mail-Sprache"}>
+        <button type="button" className={`admin-mail-preset ${mailLanguage === "de" ? "active" : ""}`} aria-selected={mailLanguage === "de"} onClick={() => selectMailLanguage("de")}>Deutsch</button>
+        <button type="button" className={`admin-mail-preset ${mailLanguage === "en" ? "active" : ""}`} aria-selected={mailLanguage === "en"} onClick={() => selectMailLanguage("en")}>English</button>
+      </div>
       <div className="editgrid">
         <div className="wide"><label htmlFor="admin-mail-to">{english ? "Recipient email" : "Empfänger-E-Mail"}</label><input id="admin-mail-to" type="email" value={mailTo} onChange={(event) => setMailTo(event.target.value)} placeholder="name@example.com" /></div>
         <div className="wide"><label htmlFor="admin-mail-subject">{english ? "Subject" : "Betreff"}</label><input id="admin-mail-subject" value={mailSubject} onChange={(event) => setMailSubject(event.target.value)} /></div>
