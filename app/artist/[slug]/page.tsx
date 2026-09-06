@@ -3,6 +3,7 @@ import { ChannelVideo, VideoShelf } from "@/components/video-shelf";
 import { PublicProfile } from "@/components/public-profile";
 import { ProfileNav } from "@/components/profile-nav";
 import { ProfileViewSwitch } from "@/components/profile-view-switch";
+import { SpotifyProfilePlayer } from "@/components/spotify-profile-player";
 import { supabaseKey, supabaseUrl } from "@/lib/supabase";
 import styles from "./voitto-profile.module.css";
 import type { Metadata } from "next";
@@ -98,7 +99,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           <div className={styles.main}>
             <section className={styles.section} id="profile"><h2>About</h2><p className={styles.bio}>{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p><p className={styles.quote}>Independent sound. Real ideas. No permission needed.</p></section>
             {videos.length>0&&<section className={styles.section} id="videos" data-premium-content><VideoShelf videos={videos} showPlayer/></section>}
-            {spotifyTracks.length>0&&<section className={styles.section} id="tracks"><div id="spotify"><TrackShelf tracks={spotifyTracks} sectionLabel="Selected Tracks" heading="Selected Tracks" showPlayer/></div></section>}
+            {spotifyTracks.length>0&&<section className={styles.section} id="tracks"><div id="spotify"><SpotifyProfilePlayer spotifyUrl={profile.spotify_url} name={name}/><TrackShelf tracks={spotifyTracks} sectionLabel="Selected Tracks" heading="Selected Tracks" showPlayer={false}/></div></section>}
             {otherTracks.length>0&&<section className={styles.section} id="suno" data-premium-content><TrackShelf tracks={otherTracks} sectionLabel="Suno" heading="Suno" showPlayer={false}/></section>}
           </div>
           <aside className={styles.right}>
