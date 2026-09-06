@@ -21,6 +21,11 @@ export async function sendBillingEmail({ to, subject, preview, content, idempote
   if (result.error) throw new Error(result.error.message);
 }
 
+export async function sendCustomEmail({ to, subject, html, text, idempotencyKey }: { to: string; subject: string; html: string; text?: string; idempotencyKey: string }) {
+  const result = await getResend().emails.send({ from, to, subject, html, text }, { headers: { "Idempotency-Key": idempotencyKey } });
+  if (result.error) throw new Error(result.error.message);
+}
+
 export function sendAdminEmail({ subject, preview, content, idempotencyKey }: Omit<Parameters<typeof sendBillingEmail>[0], "to">) {
   return sendBillingEmail({ to: adminEmail, subject, preview, content, idempotencyKey });
 }
