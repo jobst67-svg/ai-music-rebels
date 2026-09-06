@@ -37,7 +37,7 @@ function embedForTrack(track: ArtistTrack): EmbeddedTrack | null {
   return null;
 }
 
-export function TrackShelf({ tracks, editable = false, onDelete, onEdit, showPlayer = true, sectionLabel = "Songs", playerKey, activePlayerKey, onPlayerActivate }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; onEdit?: (track: ArtistTrack) => void; showPlayer?: boolean; sectionLabel?: string; playerKey?: string; activePlayerKey?: string | null; onPlayerActivate?: (playerKey: string) => void }) {
+export function TrackShelf({ tracks, editable = false, onDelete, onEdit, showPlayer = true, sectionLabel = "Songs", heading = "Ausgewählte Titel", playerKey, activePlayerKey, onPlayerActivate }: { tracks: ArtistTrack[]; editable?: boolean; onDelete?: (id: number) => void; onEdit?: (track: ArtistTrack) => void; showPlayer?: boolean; sectionLabel?: string; heading?: string; playerKey?: string; activePlayerKey?: string | null; onPlayerActivate?: (playerKey: string) => void }) {
   const embeddedTracks = useMemo(() => tracks.map(embedForTrack).filter((track): track is EmbeddedTrack => Boolean(track)), [tracks]);
   const [activeId, setActiveId] = useState<number | null>(embeddedTracks[0]?.id ?? null);
   const [spotifyCovers, setSpotifyCovers] = useState<Record<number, string>>({});
@@ -72,7 +72,7 @@ export function TrackShelf({ tracks, editable = false, onDelete, onEdit, showPla
   if (tracks.length === 0) return null;
 
   return <section className="track-shelf">
-    <div className="section-title"><div><div className="eyebrow">{sectionLabel}</div><h2>Ausgewählte Titel</h2></div><div className="shelf-controls"><span>{tracks.length}</span><button type="button" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button><button type="button" aria-label="Titel nach rechts" onClick={() => scrollRail(1)}>›</button></div></div>
+    <div className="section-title"><div><div className="eyebrow">{sectionLabel}</div><h2>{heading}</h2></div><div className="shelf-controls"><span>{tracks.length}</span><button type="button" aria-label="Titel nach links" onClick={() => scrollRail(-1)}>‹</button><button type="button" aria-label="Titel nach rechts" onClick={() => scrollRail(1)}>›</button></div></div>
     {showPlayer && activeTrack && (activeTrack.kind === "spotify" ? <div className="music-player spotify spotify-compact">
       <iframe key={`${activeTrack.id}-${playerIsActive ? "active" : "idle"}`} src={spotifySrc ?? activeTrack.embedUrl} title={`${activeTrack.title} Spotify player`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
     </div> : <div className={`music-player ${activeTrack.kind} ${playerIsActive ? "" : "player-placeholder"}`}>
