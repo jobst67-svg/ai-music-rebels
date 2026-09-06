@@ -48,7 +48,6 @@ export default function HomePage() {
         <ProfileNav variant="home" email={email} />
         <section className={styles.hero}>
           <div className={styles.heroCopy}>
-            <div className={styles.eyebrow}>{english ? "Independent creators. Real music. Bigger tomorrow." : "Independent Creators. Echte Musik. Größer morgen."}</div>
             <h1><span>{english ? "YOUR MUSIC." : "DEINE MUSIK."}</span><span className={styles.green}>{english ? "YOUR PROFILE." : "DEIN PROFIL."}</span><span>{english ? "YOUR RULES." : "DEINE REGELN."}</span></h1>
             <p>{english ? "Create your own free artist profile and share your music, links and videos — all in one place. Built for AI music creators. By creators." : "Erstelle dein kostenloses Künstlerprofil und zeig Musik, Links und Videos an einem Ort. Gebaut für AI Music Creator. Von Creators."}</p>
             {email ? <Link className={styles.primaryButton} href="/claim-subdomain">{english ? "Claim your subdomain" : "Subdomain sichern"}</Link> : <div className={styles.signupButtons}>
