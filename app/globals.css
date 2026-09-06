@@ -210,6 +210,10 @@ html[data-locale="en"] .en-copy { display:block; }
 .admin-mail .section-title { margin-bottom:8px; }
 .admin-mail .section-title h2 { margin:0; }
 .admin-mail .section-title > span { color:var(--muted); font-size:12px; }
+.admin-mail-presets { display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 4px; }
+.admin-mail-preset { border:1px solid #3a3e47; background:#20242b; color:#f6f4ef; padding:9px 16px; border-radius:8px; font-weight:800; }
+.admin-mail-preset:hover { border-color:var(--lime); color:var(--lime); }
+.admin-mail-preset.active { border-color:var(--lime); background:var(--lime); color:#07100b; }
 .admin-mail-html { min-height:360px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; line-height:1.5; }
 .admin-mail-actions { display:flex; align-items:center; flex-wrap:wrap; gap:14px; margin-top:16px; }
 .admin-mail-actions .note { margin:0; }
