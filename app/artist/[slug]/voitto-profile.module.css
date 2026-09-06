@@ -22,7 +22,10 @@
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .stats>div{display:grid;place-items:center;gap:2px;padding:10px 4px;border:1px solid #292d34;border-radius:10px;background:#12151a}
 .stats strong{font-size:17px;color:#f6f4ef}.stats span{font-size:9px;color:#8f949d}
+.sideNav,.right{position:sticky;top:84px;align-self:start}
 .main :global(.track-shelf),.main :global(.video-shelf){margin-top:18px}
+.main :global(.music-player.spotify-compact){height:180px;min-height:180px}
+.main :global(.music-player.spotify-compact iframe){height:180px}
 .main :global(.section-title){padding-bottom:8px;margin-bottom:10px}
 .main :global(.section-title h2){font-size:18px;margin-top:3px}
 .main :global(.section-title .eyebrow){font-size:8px}
@@ -36,6 +39,9 @@
 .main :global(.video-thumb .playmark){font-size:15px}
 .main :global(.shelf-arrow){width:24px;height:24px;font-size:17px;top:calc(50% - 18px)}
 @media(max-width:680px){
+  .sideNav,.right{position:static}
+  .main :global(.music-player.spotify-compact){height:152px;min-height:152px}
+  .main :global(.music-player.spotify-compact iframe){height:152px}
   .main :global(.track-grid){grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
   .main :global(.video-grid){grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
   .main :global(.track-title),.main :global(.video-card p){font-size:8px}
