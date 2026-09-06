@@ -89,7 +89,7 @@ export function ProfileNav({
       <Link className="profile-nav-link" href={accountTarget}>{resolvedAccountLabel}</Link>
       {isAdmin && <Link className="profile-nav-link" href="/admin">Admin</Link>}
       {isAccount && onSignOut && <button type="button" className="profile-nav-link profile-nav-logout" onClick={onSignOut}>{english ? "Sign out" : "Abmelden"}</button>}
-      {!isAccount && !resolvedEmail && <Link className="profile-nav-join" href={sitePath("/register?next=/claim-subdomain")}>{variant === "standard" ? (english ? "Claim your free subdomain" : "Kostenlose Subdomain sichern") : (english ? "Join Now" : "Jetzt mitmachen")}</Link>}
+      {!isAccount && !resolvedEmail && <Link className="profile-nav-join" href={sitePath("/register?next=/claim-subdomain")}>{english ? "Claim your free subdomain" : "Kostenlose Subdomain sichern"}</Link>}
       <LanguageSwitcher />
     </>
   );
