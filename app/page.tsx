@@ -9,16 +9,7 @@ import { SiteFooter } from "@/components/site-footer";
 import styles from "./home.module.css";
 
 type Rebel = { id:string; slug:string; artist_name:string|null; image_path:string|null; genre_primary:string|null; genre_secondary:string|null };
-type DemoRebel = { id:string; slug:string; artist_name:string; genre_primary:string; genre_secondary?:string; image:string };
-
-const demoRebels: DemoRebel[] = [
-  { id:"demo-neon-wraith", slug:"neon-wraith", artist_name:"Neon Wraith", genre_primary:"Techno", genre_secondary:"Electronic", image:"/demo-neon-wraith.svg" },
-  { id:"demo-velvet-circuit", slug:"velvet-circuit", artist_name:"Velvet Circuit", genre_primary:"Pop", genre_secondary:"Electronic", image:"/demo-velvet-circuit.svg" },
-  { id:"demo-ash-static", slug:"ash-static", artist_name:"Ash & Static", genre_primary:"Alternative", genre_secondary:"Rock", image:"/demo-ash-static.svg" },
-  { id:"demo-lunar-bloom", slug:"lunar-bloom", artist_name:"Lunar Bloom", genre_primary:"Ambient", genre_secondary:"Lo-fi", image:"/demo-lunar-bloom.svg" },
-  { id:"demo-chrome-saints", slug:"chrome-saints", artist_name:"Chrome Saints", genre_primary:"Metal", genre_secondary:"Electronic", image:"/demo-chrome-saints.svg" },
-  { id:"demo-nocturne-vale", slug:"nocturne-vale", artist_name:"Nocturne Vale", genre_primary:"Pop", genre_secondary:"Alternative", image:"/demo-nocturne-vale.svg" }
-];
+type DemoRebel = { id:string; slug:string; artist_name:string; image_path:string|null; genre_primary:string|null; genre_secondary:string|null };
 
 function RebelsLogo({ footer = false }: { footer?: boolean }) {
   return <img className={footer ? styles.footerLogoImage : styles.headerLogoImage} src="/ai-music-rebels-logo.webp" alt="AI Music Rebels" />;
@@ -29,6 +20,7 @@ export default function HomePage() {
   const english = locale === "en";
   const [email, setEmail] = useState<string|null>(null);
   const [rebels, setRebels] = useState<Rebel[]>([]);
+  const [demoRebels, setDemoRebels] = useState<DemoRebel[]>([]);
   const [authBusy, setAuthBusy] = useState(false);
   const rail = useRef<HTMLDivElement>(null);
 
@@ -38,6 +30,8 @@ export default function HomePage() {
     supabase.auth.getUser().then(({data}) => setEmail(data.user?.email ?? null));
     supabase.from("artist_profiles").select("id,slug,artist_name,image_path,genre_primary,genre_secondary").eq("is_published",true).order("updated_at",{ascending:false}).limit(10)
       .then(({data}) => setRebels((data as Rebel[]|null) ?? []));
+    supabase.from("demo_artist_profiles").select("id,slug,artist_name,image_path,genre_primary,genre_secondary").eq("is_published",true).order("artist_name",{ascending:true})
+      .then(({data}) => setDemoRebels((data as DemoRebel[]|null) ?? []));
   }, []);
 
   async function continueWithGoogle() {
@@ -77,8 +71,8 @@ export default function HomePage() {
           </div>
           <div className={styles.rail} ref={rail}>
             {rebels.map((artist) => <a className={styles.artistCard} href={`https://${artist.slug}.aimusicrebels.com`} onClick={(event) => { if (window.location.hostname.endsWith(".vercel.app")) { event.preventDefault(); window.location.assign(`/artist/${artist.slug}`); } }} key={artist.id}><div className={styles.avatar}>{artist.image_path ? <img src={artist.image_path} alt="" /> : <span>{(artist.artist_name || "R").slice(0,1)}</span>}</div><strong>{artist.artist_name || artist.slug}</strong><small>{[artist.genre_primary,artist.genre_secondary].filter(Boolean).join(" · ") || "AI Music"}</small></a>)}
-            {demoRebels.map((artist) => <a className={styles.artistCard} href={`https://${artist.slug}.aimusicrebels.com`} onClick={(event) => { if (window.location.hostname.endsWith(".vercel.app")) { event.preventDefault(); window.location.assign(`/artist/${artist.slug}`); } }} key={artist.id}><div className={styles.avatar}><img src={artist.image} alt="" /></div><strong>{artist.artist_name}</strong><small>{[artist.genre_primary,artist.genre_secondary].filter(Boolean).join(" · ")} · Demo</small></a>)}
-            {rebels.length === 0 && <div className={styles.emptyCard}><div className={styles.avatar}><span>⚡</span></div><strong>{english ? "The first Rebels are coming." : "Die ersten Rebellen kommen."}</strong><small>{english ? "Your profile can be one of them." : "Dein Profil kann dazugehören."}</small></div>}
+            {demoRebels.map((artist) => <a className={styles.artistCard} href={`https://${artist.slug}.aimusicrebels.com`} onClick={(event) => { if (window.location.hostname.endsWith(".vercel.app")) { event.preventDefault(); window.location.assign(`/artist/${artist.slug}`); } }} key={artist.id}><div className={styles.avatar}>{artist.image_path ? <img src={artist.image_path} alt="" /> : <span>{artist.artist_name.slice(0,1)}</span>}</div><strong>{artist.artist_name}</strong><small>{[artist.genre_primary,artist.genre_secondary].filter(Boolean).join(" · ") || "AI Music"} · Demo</small></a>)}
+            {rebels.length === 0 && demoRebels.length === 0 && <div className={styles.emptyCard}><div className={styles.avatar}><span>⚡</span></div><strong>{english ? "The first Rebels are coming." : "Die ersten Rebellen kommen."}</strong><small>{english ? "Your profile can be one of them." : "Dein Profil kann dazugehören."}</small></div>}
             <Link className={`${styles.artistCard} ${styles.claimCard}`} href="/register?next=/claim-subdomain"><div className={styles.plus}>+</div><strong>{english ? "Claim your own profile" : "Hol dir dein eigenes Profil"}</strong><small>Join the rebellion</small></Link>
           </div>
         </section>
