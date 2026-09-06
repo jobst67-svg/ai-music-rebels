@@ -21,6 +21,36 @@ type Warning = { message: string; created_at: string };
 type AdminUser = { id: string; email: string; created_at: string; last_sign_in_at: string | null; email_confirmed_at: string | null; banned_until: string | null; profile: Profile | null; warning_count: number; latest_warning: Warning | null };
 type Action = "approve" | "unpublish" | "ban" | "unban" | "kick" | "warn" | "cancel_subscription";
 
+function defaultMailHtml(english: boolean) {
+  return english ? `<!doctype html>
+<html lang="en">
+  <body style="margin:0;background:#061014;color:#f7f8f6;font-family:Arial,Helvetica,sans-serif;">
+    <div style="max-width:620px;margin:0 auto;padding:36px 24px;background:#061014;">
+      <p style="margin:0 0 28px;"><img src="https://aimusicrebels.com/ai-music-rebels-logo.webp" alt="AI Music Rebels" style="width:220px;max-width:100%;height:auto;"></p>
+      <h1 style="margin:0 0 18px;font-size:32px;line-height:1.1;color:#f7f8f6;">Your music. Your profile. Your rules.</h1>
+      <p style="font-size:17px;line-height:1.6;color:#d6dfdc;">Hey, I came across your music and wanted to invite you to AI Music Rebels.</p>
+      <p style="font-size:17px;line-height:1.6;color:#d6dfdc;">You can claim your own free artist profile with a permanent subdomain and collect all your links, music and videos in one place.</p>
+      <p style="margin:28px 0;"><a href="https://aimusicrebels.com/register?next=/claim-subdomain" style="display:inline-block;padding:14px 22px;border-radius:8px;background:#c8ff00;color:#07100b;text-decoration:none;font-weight:800;">Claim your free subdomain</a></p>
+      <p style="font-size:14px;line-height:1.6;color:#aab8b3;">Free to start. No obligation. Premium is optional.</p>
+      <p style="margin-top:32px;font-size:14px;line-height:1.6;color:#aab8b3;">Best,<br>AI Music Rebels</p>
+    </div>
+  </body>
+</html>` : `<!doctype html>
+<html lang="de">
+  <body style="margin:0;background:#061014;color:#f7f8f6;font-family:Arial,Helvetica,sans-serif;">
+    <div style="max-width:620px;margin:0 auto;padding:36px 24px;background:#061014;">
+      <p style="margin:0 0 28px;"><img src="https://aimusicrebels.com/ai-music-rebels-logo.webp" alt="AI Music Rebels" style="width:220px;max-width:100%;height:auto;"></p>
+      <h1 style="margin:0 0 18px;font-size:32px;line-height:1.1;color:#f7f8f6;">Deine Musik. Dein Profil. Deine Regeln.</h1>
+      <p style="font-size:17px;line-height:1.6;color:#d6dfdc;">Hey, ich bin auf deine Musik aufmerksam geworden und möchte dich zu AI Music Rebels einladen.</p>
+      <p style="font-size:17px;line-height:1.6;color:#d6dfdc;">Du kannst dir ein kostenloses Künstlerprofil mit dauerhafter Subdomain sichern und deine Links, Musik und Videos an einem Ort sammeln.</p>
+      <p style="margin:28px 0;"><a href="https://aimusicrebels.com/register?next=/claim-subdomain" style="display:inline-block;padding:14px 22px;border-radius:8px;background:#c8ff00;color:#07100b;text-decoration:none;font-weight:800;">Kostenlose Subdomain sichern</a></p>
+      <p style="font-size:14px;line-height:1.6;color:#aab8b3;">Kostenlos starten. Unverbindlich. Premium ist optional.</p>
+      <p style="margin-top:32px;font-size:14px;line-height:1.6;color:#aab8b3;">Viele Grüße<br>AI Music Rebels</p>
+    </div>
+  </body>
+</html>`;
+}
+
 function formatDate(value: string | null) {
   return value ? new Intl.DateTimeFormat("de-DE", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
 }
@@ -32,6 +62,11 @@ export default function AdminPage() {
   const [demos, setDemos] = useState<DemoProfile[]>([]);
   const [status, setStatus] = useState(english ? "Loading …" : "Wird geladen …");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [mailTo, setMailTo] = useState("");
+  const [mailSubject, setMailSubject] = useState(english ? "Claim your free artist profile on AI Music Rebels" : "Sichere dir dein kostenloses Künstlerprofil bei AI Music Rebels");
+  const [mailHtml, setMailHtml] = useState(() => defaultMailHtml(english));
+  const [mailBusy, setMailBusy] = useState(false);
+  const [mailStatus, setMailStatus] = useState("");
 
   async function authHeaders() {
     const { data } = await getSupabase().auth.getSession();
@@ -44,6 +79,18 @@ export default function AdminPage() {
 
   async function demoRequest(method: "GET" | "PATCH" | "POST", body?: object) {
     return fetch("/api/admin/demo-profiles", { method, headers: await authHeaders(), body: body ? JSON.stringify(body) : undefined });
+  }
+
+  async function sendMail() {
+    if (!mailTo.trim()) { setMailStatus(english ? "Enter a recipient email address first." : "Bitte zuerst eine Empfänger-E-Mail-Adresse eingeben."); return; }
+    setMailBusy(true); setMailStatus("");
+    try {
+      const response = await fetch("/api/admin/send-email", { method: "POST", headers: await authHeaders(), body: JSON.stringify({ to: mailTo, subject: mailSubject, html: mailHtml }) });
+      const result = await response.json() as { message?: string; error?: string };
+      if (!response.ok) throw new Error(result.error || (english ? "Email could not be sent." : "E-Mail konnte nicht gesendet werden."));
+      setMailStatus(result.message || (english ? "Email sent." : "E-Mail wurde gesendet."));
+    } catch (error) { setMailStatus(error instanceof Error ? error.message : (english ? "Email could not be sent." : "E-Mail konnte nicht gesendet werden.")); }
+    finally { setMailBusy(false); }
   }
 
   async function load() {
@@ -132,6 +179,18 @@ export default function AdminPage() {
     <h1>{english ? "Manage Rebels." : "Rebels verwalten."}</h1>
     <p className="lead">{english ? "Edit demo artists and moderate registered users." : "Demo-Artists bearbeiten und registrierte Nutzer moderieren."}</p>
     {status && <p className="note admin-status">{status}</p>}
+
+    <section className="card admin-mail">
+      <div className="section-title"><div><div className="eyebrow">E-Mail</div><h2>{english ? "Send an invitation" : "Einladung senden"}</h2></div><span>{english ? "Admin only" : "Nur für Admins"}</span></div>
+      <p>{english ? "Enter the address, adjust the subject or HTML if needed, and send the prepared message." : "E-Mail-Adresse eintragen, Betreff oder HTML bei Bedarf anpassen und die vorbereitete Nachricht senden."}</p>
+      <div className="editgrid">
+        <div className="wide"><label htmlFor="admin-mail-to">{english ? "Recipient email" : "Empfänger-E-Mail"}</label><input id="admin-mail-to" type="email" value={mailTo} onChange={(event) => setMailTo(event.target.value)} placeholder="name@example.com" /></div>
+        <div className="wide"><label htmlFor="admin-mail-subject">{english ? "Subject" : "Betreff"}</label><input id="admin-mail-subject" value={mailSubject} onChange={(event) => setMailSubject(event.target.value)} /></div>
+        <div className="wide"><label htmlFor="admin-mail-html">HTML</label><textarea id="admin-mail-html" className="admin-mail-html" rows={18} value={mailHtml} onChange={(event) => setMailHtml(event.target.value)} spellCheck={false} /></div>
+      </div>
+      <div className="admin-mail-actions"><button type="button" disabled={mailBusy} onClick={() => void sendMail()}>{mailBusy ? (english ? "Sending …" : "Wird gesendet …") : (english ? "Send email" : "E-Mail senden")}</button>{mailStatus && <span className="note">{mailStatus}</span>}</div>
+      <details className="admin-details"><summary>{english ? "Preview" : "Vorschau"}</summary><iframe className="admin-mail-preview" title={english ? "Email preview" : "E-Mail-Vorschau"} srcDoc={mailHtml} sandbox="" /></details>
+    </section>
 
     <section className="admin-list">
       <h2>{english ? "Demo profiles" : "Demo-Profile"}</h2>
