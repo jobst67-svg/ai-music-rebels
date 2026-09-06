@@ -82,9 +82,9 @@ export function ProfileNav({
 
   const menuItems = (
     <>
-      <Link className="profile-nav-link active" href="/">Home</Link>
+      <Link className="profile-nav-link active" href={sitePath("/")}>Home</Link>
       <Link className="profile-nav-link" href={sitePath("/music")}>{english ? "Music" : "Musik"}</Link>
-      <Link className="profile-nav-link" href="/#rebels">{english ? "Discover" : "Entdecken"}</Link>
+      <Link className="profile-nav-link" href={sitePath("/#rebels")}>{english ? "Discover" : "Entdecken"}</Link>
       <Link className="profile-nav-link" href={sitePath("/example-profile")}>{english ? "Example profile" : "Beispielprofil"}</Link>
       <Link className="profile-nav-link" href={accountTarget}>{resolvedAccountLabel}</Link>
       {isAdmin && <Link className="profile-nav-link" href="/admin">Admin</Link>}
@@ -95,7 +95,7 @@ export function ProfileNav({
   );
 
   return <nav className={`nav profile-nav ${isAccount ? "profile-nav-account" : ""}`}>
-    <Link className="profile-brand" href="/" aria-label="AI Music Rebels Startseite">
+    <Link className="profile-brand" href={sitePath("/")} aria-label="AI Music Rebels Startseite">
       <img src="/ai-music-rebels-logo.webp" alt="AI Music Rebels" />
     </Link>
 
