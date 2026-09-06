@@ -22,29 +22,23 @@ type ArtistProfile = {
   tiktok_url: string | null;
   facebook_url: string | null;
   channel_mode: "full" | "basic";
-};
-
-const demoProfiles: Record<string, ArtistProfile> = {
-  "neon-wraith": { id:"demo-neon-wraith", artist_name:"Neon Wraith", slug:"neon-wraith", tagline:"Dieses Profil befindet sich im Aufbau.", genre_primary:"Techno", genre_secondary:"Electronic", bio:"Dieses Demo-Profil befindet sich im Aufbau. Neue Musik, Links und Videos folgen in Kürze.", image_path:"/demo-neon-wraith.svg", banner_path:null, accent_color:"#c8ff00", spotify_url:null, youtube_url:null, suno_url:null, tiktok_url:null, facebook_url:null, channel_mode:"basic" },
-  "velvet-circuit": { id:"demo-velvet-circuit", artist_name:"Velvet Circuit", slug:"velvet-circuit", tagline:"Dieses Profil befindet sich im Aufbau.", genre_primary:"Pop", genre_secondary:"Electronic", bio:"Dieses Demo-Profil befindet sich im Aufbau. Neue Musik, Links und Videos folgen in Kürze.", image_path:"/demo-velvet-circuit.svg", banner_path:null, accent_color:"#e34bc5", spotify_url:null, youtube_url:null, suno_url:null, tiktok_url:null, facebook_url:null, channel_mode:"basic" },
-  "ash-static": { id:"demo-ash-static", artist_name:"Ash & Static", slug:"ash-static", tagline:"Dieses Profil befindet sich im Aufbau.", genre_primary:"Alternative", genre_secondary:"Rock", bio:"Dieses Demo-Profil befindet sich im Aufbau. Neue Musik, Links und Videos folgen in Kürze.", image_path:"/demo-ash-static.svg", banner_path:null, accent_color:"#c8ff00", spotify_url:null, youtube_url:null, suno_url:null, tiktok_url:null, facebook_url:null, channel_mode:"basic" },
-  "lunar-bloom": { id:"demo-lunar-bloom", artist_name:"Lunar Bloom", slug:"lunar-bloom", tagline:"Dieses Profil befindet sich im Aufbau.", genre_primary:"Ambient", genre_secondary:"Lo-fi", bio:"Dieses Demo-Profil befindet sich im Aufbau. Neue Musik, Links und Videos folgen in Kürze.", image_path:"/demo-lunar-bloom.svg", banner_path:null, accent_color:"#9ed8ff", spotify_url:null, youtube_url:null, suno_url:null, tiktok_url:null, facebook_url:null, channel_mode:"basic" },
-  "chrome-saints": { id:"demo-chrome-saints", artist_name:"Chrome Saints", slug:"chrome-saints", tagline:"Dieses Profil befindet sich im Aufbau.", genre_primary:"Metal", genre_secondary:"Electronic", bio:"Dieses Demo-Profil befindet sich im Aufbau. Neue Musik, Links und Videos folgen in Kürze.", image_path:"/demo-chrome-saints.svg", banner_path:null, accent_color:"#d8dde1", spotify_url:null, youtube_url:null, suno_url:null, tiktok_url:null, facebook_url:null, channel_mode:"basic" },
-  "nocturne-vale": { id:"demo-nocturne-vale", artist_name:"Nocturne Vale", slug:"nocturne-vale", tagline:"Dieses Profil befindet sich im Aufbau.", genre_primary:"Pop", genre_secondary:"Alternative", bio:"Dieses Demo-Profil befindet sich im Aufbau. Neue Musik, Links und Videos folgen in Kürze.", image_path:"/demo-nocturne-vale.svg", banner_path:null, accent_color:"#bfa7ff", spotify_url:null, youtube_url:null, suno_url:null, tiktok_url:null, facebook_url:null, channel_mode:"basic" }
+  is_demo?: boolean;
 };
 
 async function query<T>(table: string, params: Record<string, string>): Promise<T[]> {
   if (!supabaseKey) return [];
   const response = await fetch(`${supabaseUrl}/rest/v1/${table}?${new URLSearchParams(params)}`, {
     headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
-    next: { revalidate: 60 }
+    next: { revalidate: 30 }
   });
   return response.ok ? response.json() as Promise<T[]> : [];
 }
 
 async function findArtist(slug: string) {
   const rows = await query<ArtistProfile>("artist_profiles", { slug: `eq.${slug}`, is_published: "eq.true", select: "id,artist_name,slug,tagline,genre_primary,genre_secondary,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url,channel_mode" });
-  return rows[0] ?? demoProfiles[slug] ?? null;
+  if (rows[0]) return rows[0];
+  const demos = await query<Omit<ArtistProfile, "channel_mode">>("demo_artist_profiles", { slug: `eq.${slug}`, is_published: "eq.true", select: "id,artist_name,slug,tagline,genre_primary,genre_secondary,bio,image_path,banner_path,accent_color,spotify_url,youtube_url,suno_url,tiktok_url,facebook_url" });
+  return demos[0] ? { ...demos[0], channel_mode: "basic" as const, is_demo: true } : null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -69,8 +63,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
   if (!profile) return <main className="shell page"><ProfileNav /><section className="profile"><div className="eyebrow">404</div><h1>Profil nicht gefunden.</h1><p className="lead">Diese Künstlerseite ist noch nicht veröffentlicht oder existiert nicht.</p></section></main>;
 
-  const isDemo = profile.id.startsWith("demo-");
-  const showPremiumContent = profile.channel_mode === "full" && !isDemo;
+  const showPremiumContent = profile.channel_mode === "full" && !profile.is_demo;
   const [videos, tracks] = showPremiumContent ? await Promise.all([
     query<ChannelVideo>("artist_videos", { artist_profile_id: `eq.${profile.id}`, select: "id,youtube_id,youtube_url,title", order: "created_at.desc" }),
     query<ArtistTrack>("artist_tracks", { artist_profile_id: `eq.${profile.id}`, select: "id,platform,title,track_url,cover_path", order: "created_at.desc", limit: "12" })
