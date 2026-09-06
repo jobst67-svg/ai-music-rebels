@@ -30,6 +30,7 @@ export function ProfileNav({
   const menuItems = (
     <>
       <Link className="profile-nav-link active" href="/">Home</Link>
+      <Link className="profile-nav-link" href="/music">{english ? "Music" : "Musik"}</Link>
       <Link className="profile-nav-link" href="/#rebels">{english ? "Discover" : "Entdecken"}</Link>
       <Link className="profile-nav-link" href="/example-profile">{english ? "Example profile" : "Beispielprofil"}</Link>
       <Link className="profile-nav-link" href={resolvedAccountHref}>{resolvedAccountLabel}</Link>
