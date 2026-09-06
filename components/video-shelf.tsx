@@ -25,7 +25,7 @@ export function VideoShelf({ videos, editable = false, onDelete, onEdit, showPla
   return (
     <section className="video-shelf">
       <div className="section-title"><div><div className="eyebrow">Videos</div><h2>Neueste Videos</h2></div><div className="shelf-controls"><span>max. 5</span><button type="button" aria-label="Videos nach links" onClick={() => scrollRail(-1)}>‹</button><button type="button" aria-label="Videos nach rechts" onClick={() => scrollRail(1)}>›</button></div></div>
-      {active && <div className={`video-player ${playerIsActive ? "" : "player-placeholder"}`}>
+      {showPlayer && active && <div className={`video-player ${playerIsActive ? "" : "player-placeholder"}`}>
         {playerIsActive ? <iframe src={playerSrc} title={active.title || "YouTube video"} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /> : <button type="button" className="preview-placeholder" onClick={() => activatePlayer(true)} aria-label={`${active.title || "Video"} Player aktivieren`}>
           <img src={`https://i.ytimg.com/vi/${active.youtube_id}/hqdefault.jpg`} alt="" />
           <span className="preview-placeholder-overlay">▶ Vorschau öffnen</span>
@@ -39,7 +39,7 @@ export function VideoShelf({ videos, editable = false, onDelete, onEdit, showPla
               return;
             }
             setActiveId(video.id);
-            activatePlayer(true);
+            if (showPlayer) activatePlayer(true);
           }} aria-label={cardActionIsEdit ? `${video.title || "Video"} bearbeiten` : `${video.title || "Video"} abspielen`}>
             <img src={`https://i.ytimg.com/vi/${video.youtube_id}/hqdefault.jpg`} alt={video.title || "YouTube-Video"} />
             <span className="playmark">▶</span>
