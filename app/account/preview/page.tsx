@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArtistTrack } from "@/components/track-shelf";
 import { ChannelVideo } from "@/components/video-shelf";
-import { PublicProfile } from "@/components/public-profile";
+import { ProfileShowcase } from "@/components/profile-showcase";
 import { getSupabase } from "@/lib/supabase";
 import { ProfileNav } from "@/components/profile-nav";
 
@@ -55,5 +55,17 @@ export default function AccountPreviewPage() {
 
   const name = profile.artist_name || profile.slug;
   const links = [["Spotify", profile.spotify_url], ["YouTube", profile.youtube_url], ["Suno", profile.suno_url], ["TikTok", profile.tiktok_url], ["Facebook", profile.facebook_url]].filter((entry): entry is [string, string] => Boolean(entry[1]));
-  return <main className="shell page channel-page"><ProfileNav variant="profile" accountHref="/account" accountLabel="Bearbeiten" /><article className="channel"><div className="channel-banner" style={{ background: profile.banner_path ? undefined : `linear-gradient(120deg, ${profile.accent_color || "#d9ff3f"}, #151a11 45%, #101116)` }}>{profile.banner_path && <img src={profile.banner_path} alt={`${name} Kanalbanner`} />}</div><header className="channel-head"><div className="channel-avatar" style={{ background: `linear-gradient(135deg, ${profile.accent_color || "#d9ff3f"}, #30372c)` }}>{profile.image_path ? <img src={profile.image_path} alt={name} /> : name.slice(0, 1)}</div><div><div className="eyebrow">AI Music Rebel · Vorschau</div><h1>{name}</h1><p className="tagline">{profile.tagline || "Independent AI music artist"}</p>{(profile.genre_primary || profile.genre_secondary) && <div className="genre-tags">{[profile.genre_primary, profile.genre_secondary].filter(Boolean).map((genre) => <span className="genre-pill" key={genre}>{genre}</span>)}</div>}</div></header><PublicProfile profile={profile} name={name} links={links} tracks={tracks} videos={videos} showViewSwitch={profile.moderation_status === "approved"} initialView={profile.channel_mode === "full" ? "premium" : "free"} /></article></main>;
+  return <main className="shell page profile-showcase-page">
+    <ProfileNav variant="profile" accountHref="/account" accountLabel="Bearbeiten" />
+    <ProfileShowcase
+      profile={profile}
+      name={name}
+      links={links}
+      tracks={tracks}
+      videos={videos}
+      initialView={profile.channel_mode === "full" ? "premium" : "free"}
+      premiumAvailable={profile.channel_mode === "full"}
+      kicker="AI Music Rebel · Vorschau"
+    />
+  </main>;
 }
