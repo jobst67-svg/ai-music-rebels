@@ -69,8 +69,8 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .free-link-tile:hover { border-color:var(--lime); transform:translateY(-2px); }
 .free-link-tile strong { font-size:13px; }
 .free-link-tile span { color:var(--lime); font-size:22px; }
-.auth { max-width:480px; padding:75px 0; margin:0 auto; }
-.auth .card { margin-top:24px; }
+.auth { max-width:1160px; padding:75px 0; margin:0 auto; }
+.auth .card { width:min(100%,480px); margin:24px auto 0; }
 .switch { display:flex; gap:8px; margin-bottom:18px; }
 .switch button { background:#2a2d34; color:white; padding:9px 12px; }
 .switch button.active { background:var(--lime); color:#111; }
