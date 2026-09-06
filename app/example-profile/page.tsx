@@ -3,6 +3,7 @@ import { ArtistTrack } from "@/components/track-shelf";
 import { ChannelVideo, VideoShelf } from "@/components/video-shelf";
 import { TrackShelf } from "@/components/track-shelf";
 import { ProfileNav } from "@/components/profile-nav";
+import { ProfileViewSwitch } from "@/components/profile-view-switch";
 import { supabaseKey, supabaseUrl } from "@/lib/supabase";
 import styles from "../artist/[slug]/voitto-profile.module.css";
 
@@ -72,7 +73,7 @@ export default async function ExampleProfilePage() {
 
   return <main className={`shell page ${styles.page}`}>
     <ProfileNav />
-    <article className={styles.frame}>
+    <article className={styles.frame} data-profile-frame data-profile-view="premium">
       <div className={styles.hero} style={{ background: profile.banner_path ? undefined : `linear-gradient(120deg,${profile.accent_color || "#bd0a2e"},#111 62%)` }}>{profile.banner_path && <img src={profile.banner_path} alt={`${name} Banner`} />}</div>
       <header className={styles.identity}>
         <div className={styles.avatar}>{profile.image_path ? <img src={profile.image_path} alt={name} /> : name.slice(0, 1)}</div>
@@ -82,12 +83,12 @@ export default async function ExampleProfilePage() {
         <nav className={styles.sideNav}><a href="#profile">Profile</a><a href="#tracks">Selected Tracks</a><a href="#suno">Suno</a><a href="#spotify">Spotify</a></nav>
         <div className={styles.main}>
           <section className={styles.section} id="profile"><h2>About</h2><p className={styles.bio}>{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p><p className={styles.quote}>Independent sound. Real ideas. No permission needed.</p></section>
-          {videos.length > 0 && <section className={styles.section} id="videos"><VideoShelf videos={videos} showPlayer /></section>}
+          {videos.length > 0 && <section className={styles.section} id="videos" data-premium-content><VideoShelf videos={videos} showPlayer /></section>}
           {spotifyTracks.length > 0 && <section className={styles.section} id="tracks"><div id="spotify"><TrackShelf tracks={spotifyTracks} sectionLabel="Selected Tracks" heading="Selected Tracks" showPlayer /></div></section>}
-          {otherTracks.length > 0 && <section className={styles.section} id="suno"><TrackShelf tracks={otherTracks} sectionLabel="Suno" heading="Suno" showPlayer={false} /></section>}
+          {otherTracks.length > 0 && <section className={styles.section} id="suno" data-premium-content><TrackShelf tracks={otherTracks} sectionLabel="Suno" heading="Suno" showPlayer={false} /></section>}
         </div>
         <aside className={styles.right}>
-          <div className={styles.panel}><p className={styles.panelTitle}>Profile</p><span className={styles.badge}>Beispielprofil</span></div>
+          <div className={styles.panel}><p className={styles.panelTitle}>Profile</p><ProfileViewSwitch /></div>
           <div className={styles.panel} id="links"><p className={styles.panelTitle}>Listen &amp; follow</p><div className={styles.socialIcons}>{links.map(([label, url]) => <a href={url} key={label} target="_blank" rel="noreferrer" aria-label={label}>{socialIcon(label)}</a>)}</div></div>
           <div className={styles.stats}><div><strong>{links.length}</strong><span>Links</span></div><div><strong>{tracks.length}</strong><span>Tracks</span></div><div><strong>{videos.length}</strong><span>Videos</span></div></div>
           <div className={styles.panel}><p className={styles.motto}>“{profile.tagline || "Independent AI music artist"}”</p></div>
