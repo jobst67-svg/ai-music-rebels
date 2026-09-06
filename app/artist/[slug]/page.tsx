@@ -97,7 +97,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           <div className={styles.main}>
             <section className={styles.section} id="profile"><h2>About</h2><p className={styles.bio}>{profile.bio || "Dieses Profil wird gerade aufgebaut."}</p><p className={styles.quote}>Independent sound. Real ideas. No permission needed.</p></section>
             {videos.length>0&&<section className={styles.section} id="videos"><VideoShelf videos={videos} showPlayer={false}/></section>}
-            {spotifyTracks.length>0&&<section className={styles.section} id="tracks"><TrackShelf tracks={spotifyTracks} sectionLabel="Selected Tracks" heading="Selected Tracks" showPlayer/></section>}
+            {spotifyTracks.length>0&&<section className={styles.section} id="tracks"><div id="spotify"><TrackShelf tracks={spotifyTracks} sectionLabel="Selected Tracks" heading="Selected Tracks" showPlayer/></div></section>}
             {otherTracks.length>0&&<section className={styles.section} id="suno"><TrackShelf tracks={otherTracks} sectionLabel="Suno" heading="Suno" showPlayer={false}/></section>}
           </div>
           <aside className={styles.right}>
