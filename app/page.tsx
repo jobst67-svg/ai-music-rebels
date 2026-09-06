@@ -21,7 +21,6 @@ export default function HomePage() {
   const [email, setEmail] = useState<string|null>(null);
   const [rebels, setRebels] = useState<Rebel[]>([]);
   const [demoRebels, setDemoRebels] = useState<DemoRebel[]>([]);
-  const [authBusy, setAuthBusy] = useState(false);
   const rail = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,14 +33,6 @@ export default function HomePage() {
       .then(({data}) => setDemoRebels((data as DemoRebel[]|null) ?? []));
   }, []);
 
-  async function continueWithGoogle() {
-    if (!hasSupabaseConfig) return;
-    setAuthBusy(true);
-    const redirectTo = `https://aimusicrebels.com/register?next=${encodeURIComponent("/claim-subdomain")}`;
-    const { error } = await getSupabase().auth.signInWithOAuth({ provider:"google", options:{ redirectTo } });
-    if (error) { console.error(error); setAuthBusy(false); }
-  }
-
   return (
     <main className={styles.page}>
       <div className={styles.shell}>
@@ -50,11 +41,7 @@ export default function HomePage() {
           <div className={styles.heroCopy}>
             <h1><span>{english ? "YOUR MUSIC." : "DEINE MUSIK."}</span><span className={styles.green}>{english ? "YOUR PROFILE." : "DEIN PROFIL."}</span><span>{english ? "YOUR RULES." : "DEINE REGELN."}</span></h1>
             <p>{english ? "Create your own free artist profile and share your music, links and videos — all in one place. Built for AI music creators. By creators." : "Erstelle dein kostenloses Künstlerprofil und zeig Musik, Links und Videos an einem Ort. Gebaut für AI Music Creator. Von Creators."}</p>
-            {email ? <Link className={styles.primaryButton} href="/claim-subdomain">{english ? "Claim your subdomain" : "Subdomain sichern"}</Link> : <div className={styles.signupButtons}>
-              <button type="button" className={styles.googleButton} onClick={continueWithGoogle} disabled={authBusy}><span className={styles.googleMark}>G</span>{authBusy ? (english ? "Connecting …" : "Verbinden …") : (english ? "Continue with Google" : "Mit Google registrieren")}</button>
-              <div className={styles.or}><span />{english ? "OR" : "ODER"}<span /></div>
-              <Link className={styles.emailButton} href="/register?next=/claim-subdomain">✉ {english ? "Register with Email" : "Mit E-Mail registrieren"}</Link>
-            </div>}
+            <Link className={styles.primaryButton} href={email ? "/claim-subdomain" : "/register?next=/claim-subdomain"}>{english ? "Claim your free subdomain" : "Kostenlose Subdomain sichern"}</Link>
             <div className={styles.promises}><span>◎ {english ? "Subdomain and free profiles are free forever. Upgrade to Premium anytime." : "Subdomain und Free-Profile dauerhaft kostenlos. Jederzeit auf Premium erweiterbar."}</span></div>
           </div>
           <div className={styles.heroVisual} aria-hidden="true">
