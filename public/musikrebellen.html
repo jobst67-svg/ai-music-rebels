@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Musikrebellen – Deutsche AI-Musik-Community für Suno &amp; KI-Musik</title>
+  <meta name="description" content="Musikrebellen ist die deutschsprachige AI-Musik-Community für Suno, Suno 6.0, KI-Musik, AI Songs und unabhängige Solo-Artists. Musik teilen, Feedback erhalten und gemeinsam neue Sounds entdecken.">
+  <meta name="keywords" content="Musikrebellen, deutsche AI-Musik-Community, AI Musik, KI Musik, Suno, Suno AI, Suno 6.0, Suno Musik, Suno Songs, Suno Prompts, Suno Lyrics, Suno Styles, AI Song Generator, AI Music Generator, KI Musik erstellen, Musik mit künstlicher Intelligenz, AI Music Solo Artist, AI Musik Solo Artist, AI Künstler, AI Songs, KI Songwriting, Musikproduktion mit KI, AI Musik Creator, Udio, Musik teilen, Musik Feedback, Musik Community">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="author" content="Musikrebellen">
+  <meta name="theme-color" content="#070809">
+  <link rel="canonical" href="https://aimusicrebels.com/musikrebellen.html">
+  <link rel="icon" href="/ai-music-rebels-logo.webp" type="image/webp">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Musikrebellen">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:title" content="Musikrebellen – Deutsche AI-Musik-Community">
+  <meta property="og:description" content="Deine deutschsprachige Community für Suno AI, Suno 6.0, KI-Musik, AI Songs und unabhängige AI-Musik-Solo-Artists.">
+  <meta property="og:url" content="https://aimusicrebels.com/musikrebellen.html">
+  <meta property="og:image" content="https://aimusicrebels.com/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="AI Music Rebels Logo auf schwarzem Hintergrund">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Musikrebellen – Deutsche AI-Musik-Community">
+  <meta name="twitter:description" content="Suno AI, Suno 6.0, KI-Musik und AI Songwriting auf Deutsch. Entdecke Artists, teile deine Songs und werde Teil der Rebellion.">
+  <meta name="twitter:image" content="https://aimusicrebels.com/og-image.jpg">
+
+  <style>
+    :root {
+      --bg: #070809;
+      --surface: #101214;
+      --surface-2: #151819;
+      --line: rgba(220, 255, 0, .22);
+      --text: #f5f7f0;
+      --muted: #aeb4aa;
+      --acid: #d7ff00;
+      --acid-2: #91b800;
+      --shadow: 0 22px 70px rgba(0, 0, 0, .42);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 85% 8%, rgba(215, 255, 0, .11), transparent 27rem),
+        radial-gradient(circle at 12% 38%, rgba(118, 255, 184, .06), transparent 25rem),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    a { color: inherit; }
+    .wrap { width: min(1120px, calc(100% - 36px)); margin: 0 auto; }
+    .topbar {
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(7,8,9,.78);
+      backdrop-filter: blur(14px);
+    }
+    .topbar-inner, .nav-links, .brand, .hero-actions, .chips, .benefit, .footer-inner {
+      display: flex;
+      align-items: center;
+    }
+    .topbar-inner { justify-content: space-between; gap: 24px; }
+    .brand { gap: 12px; text-decoration: none; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    .brand img { width: 44px; height: 44px; object-fit: contain; }
+    .brand span { font-size: .86rem; }
+    .nav-links { gap: 20px; color: var(--muted); font-size: .9rem; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--acid); }
+
+    .hero {
+      min-height: 650px;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      align-items: center;
+      gap: 50px;
+      padding: 78px 0 70px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--acid);
+      font-size: .77rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { line-height: 1.08; letter-spacing: -.035em; }
+    h1 { max-width: 760px; margin: 22px 0 20px; font-size: clamp(2.7rem, 7vw, 5.9rem); text-transform: uppercase; }
+    h1 span { color: var(--acid); }
+    .lead { max-width: 690px; margin: 0; color: #d9ded4; font-size: clamp(1.08rem, 2vw, 1.28rem); }
+    .hero-actions { flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 50px;
+      padding: 0 20px;
+      border-radius: 12px;
+      border: 1px solid var(--acid);
+      background: var(--acid);
+      color: #11150a;
+      font-weight: 850;
+      text-decoration: none;
+      box-shadow: 0 10px 35px rgba(215,255,0,.16);
+    }
+    .button.secondary { background: transparent; color: var(--text); border-color: rgba(255,255,255,.2); box-shadow: none; }
+    .button:hover { transform: translateY(-2px); filter: brightness(1.06); }
+    .hero-card {
+      min-height: 430px;
+      display: grid;
+      place-items: center;
+      padding: 36px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(215,255,0,.1), rgba(255,255,255,.025) 45%, rgba(255,255,255,.01));
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-card:before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 20px;
+      transform: rotate(-4deg);
+    }
+    .hero-card img { width: min(100%, 390px); position: relative; z-index: 1; filter: drop-shadow(0 18px 28px rgba(215,255,0,.18)); }
+    .hero-card small { position: absolute; bottom: 23px; color: var(--muted); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+    section { padding: 78px 0; }
+    .section-head { max-width: 770px; margin-bottom: 30px; }
+    .section-head h2 { margin: 12px 0; font-size: clamp(2rem, 4vw, 3.45rem); }
+    .section-head p { color: var(--muted); font-size: 1.05rem; }
+    .grid-3, .grid-2 { display: grid; gap: 18px; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .card {
+      padding: 26px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+    }
+    .card h3 { margin: 0 0 10px; color: var(--acid); font-size: 1.22rem; }
+    .card p { margin: 0; color: var(--muted); }
+    .number { color: var(--acid); font-size: .8rem; font-weight: 900; letter-spacing: .12em; }
+    .chips { flex-wrap: wrap; gap: 10px; }
+    .chip {
+      padding: 10px 14px;
+      border: 1px solid rgba(215,255,0,.28);
+      border-radius: 999px;
+      color: #e4ffc0;
+      background: rgba(215,255,0,.06);
+      font-size: .92rem;
+    }
+    .benefits { gap: 12px; flex-direction: column; align-items: stretch; }
+    .benefit { gap: 14px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .benefit b { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; background: var(--acid); color: #11150a; }
+    .highlight {
+      padding: 34px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(120deg, rgba(215,255,0,.12), rgba(215,255,0,.025));
+    }
+    .highlight h2 { margin-top: 0; font-size: clamp(1.9rem, 4vw, 3rem); }
+    .highlight p { color: #d0d5cc; }
+    details { padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+    summary { cursor: pointer; font-weight: 800; }
+    details p { margin-bottom: 0; color: var(--muted); }
+    .note { color: var(--muted); font-size: .88rem; }
+    footer { padding: 34px 0 50px; border-top: 1px solid rgba(255,255,255,.1); color: var(--muted); }
+    .footer-inner { justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+    .footer-inner a { color: var(--acid); text-decoration: none; }
+    @media (max-width: 820px) {
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding-top: 54px; }
+      .hero-card { min-height: 320px; }
+      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      section { padding: 58px 0; }
+    }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "OnlineCommunity",
+        "@id": "https://aimusicrebels.com/musikrebellen.html#community",
+        "name": "Musikrebellen",
+        "alternateName": "Deutsche AI-Musik-Community",
+        "url": "https://aimusicrebels.com/musikrebellen.html",
+        "description": "Deutschsprachige Community für Suno AI, Suno 6.0, KI-Musik, AI Songs und unabhängige AI-Musik-Solo-Artists.",
+        "inLanguage": "de",
+        "keywords": "Musikrebellen, AI Musik, KI Musik, Suno AI, Suno 6.0, AI Song Generator, AI Musik Solo Artist",
+        "logo": "https://aimusicrebels.com/ai-music-rebels-logo.webp",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "AI Music Rebels",
+          "url": "https://aimusicrebels.com/"
+        }
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://aimusicrebels.com/musikrebellen.html#webpage",
+        "url": "https://aimusicrebels.com/musikrebellen.html",
+        "name": "Musikrebellen – Deutsche AI-Musik-Community",
+        "isPartOf": { "@id": "https://aimusicrebels.com/musikrebellen.html#community" },
+        "about": ["AI-Musik", "Suno AI", "Suno 6.0", "KI-Musikproduktion", "AI Songwriting"],
+        "inLanguage": "de"
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://aimusicrebels.com/musikrebellen.html#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Was ist Musikrebellen?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Musikrebellen ist eine deutschsprachige AI-Musik-Community für Creator, Solo-Artists und Produzenten, die KI-Musik, AI Songs und neue Musikideen teilen möchten."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Geht es bei Musikrebellen um Suno AI und Suno 6.0?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ja. Die Community tauscht sich über Suno AI, Suno 6.0, Suno Prompts, Lyrics, Styles, Songideen und Workflows für KI-Musik aus. Musikrebellen ist unabhängig und keine offizielle Suno-Seite."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Kann ich meine AI Songs und Suno Musik teilen?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ja. Teile deine Songs, Releases, Cover, Musikvideos und Produktionsideen, hole dir Feedback und entdecke andere deutschsprachige AI-Musik-Solo-Artists."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Welche Tools werden neben Suno unterstützt?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Der Schwerpunkt liegt auf Suno AI und KI-Musik. Auch Projekte aus Udio und anderen AI-Music-Tools sind willkommen, solange sie in die Community passen."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Was ist AI Music Rebels?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "AI Music Rebels ist die Plattform für unabhängige AI-Musik-Creator. Dort kannst du ein kostenloses Künstlerprofil erstellen und deine Musik, Links und Videos an einem Ort zeigen."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="https://aimusicrebels.com/" aria-label="AI Music Rebels Startseite">
+        <img src="/ai-music-rebels-logo.webp" alt="AI Music Rebels Logo">
+        <span>Musikrebellen</span>
+      </a>
+      <nav class="nav-links" aria-label="Seitennavigation">
+        <a href="#community">Community</a>
+        <a href="#suno">Suno AI</a>
+        <a href="#themen">Themen</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap hero">
+      <div>
+        <div class="eyebrow">Deutschsprachige AI-Musik-Community</div>
+        <h1>Musikrebellen – <span>Deutsche AI-Musik-Community</span></h1>
+        <p class="lead">Dein Treffpunkt für Suno AI, Suno 6.0, KI-Musik, AI Songs und unabhängige AI-Musik-Solo-Artists. Zeig deine Musik. Teile deinen Sound. Werde Teil der Rebellion.</p>
+        <div class="hero-actions">
+          <a class="button" href="#community">Community entdecken</a>
+          <a class="button secondary" href="https://aimusicrebels.com/">Kostenloses AI-Musik-Profil</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <img src="/ai-music-rebels-logo.webp" alt="Musikrebellen und AI Music Rebels Logo">
+        <small>Independent creators. Real music.</small>
+      </div>
+    </section>
+
+    <section id="community">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">AI Artists belong here</div>
+          <h2>Gemeinsam neue Musik mit KI machen.</h2>
+          <p>Musikrebellen bringt deutschsprachige Creator zusammen, die Songs mit künstlicher Intelligenz entwickeln, eigene Sounds ausprobieren und ihre Musik sichtbar machen wollen.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <div class="number">01 / TEILEN</div>
+            <h3>Deine AI Songs</h3>
+            <p>Teile Tracks, Releases, Cover, Musikvideos, Songtexte und die Geschichte hinter deinem Sound.</p>
+          </article>
+          <article class="card">
+            <div class="number">02 / ENTDECKEN</div>
+            <h3>Neue Solo-Artists</h3>
+            <p>Entdecke unabhängige AI-Musik-Solo-Artists, Projekte und Stimmen aus der deutschsprachigen Szene.</p>
+          </article>
+          <article class="card">
+            <div class="number">03 / AUSTAUSCH</div>
+            <h3>Echtes Feedback</h3>
+            <p>Sprich über Suno Prompts, Lyrics, Styles, Songwriting, Cover-Ideen und deine nächsten Releases.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="suno">
+      <div class="wrap grid-2">
+        <div class="highlight">
+          <div class="eyebrow">Suno AI · Suno 6.0</div>
+          <h2>Von der Idee zum fertigen Song.</h2>
+          <p>Ob du mit Suno AI experimentierst, einen Suno-6.0-Workflow ausprobierst oder deine KI-Musik mit anderen Tools produzierst: Bei Musikrebellen geht es um Ideen, Austausch und hörbare Ergebnisse.</p>
+          <p class="note">Musikrebellen ist unabhängig und keine offizielle Suno-Seite.</p>
+        </div>
+        <div class="card benefits">
+          <div class="benefit"><b>♫</b><span>Suno AI Song-Ideen und kreative Prompts</span></div>
+          <div class="benefit"><b>✦</b><span>Suno Lyrics, Songtexte und AI Songwriting</span></div>
+          <div class="benefit"><b>⚡</b><span>Styles, Genres, Stimmen und neue Sounds</span></div>
+          <div class="benefit"><b>◎</b><span>Feedback für Releases und AI-Musik-Projekte</span></div>
+          <div class="benefit"><b>↗</b><span>Mehr Sichtbarkeit für unabhängige Artists</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="themen">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">Worum es geht</div>
+          <h2>AI-Musik ohne Genregrenzen.</h2>
+          <p>Von elektronischer Musik und Hip-Hop bis Rock, Pop, Metal, Ambient und experimentellen Sounds: Musikrebellen ist offen für jeden eigenen Stil.</p>
+        </div>
+        <div class="chips" aria-label="Themen der Musikrebellen Community">
+          <span class="chip">Suno AI</span>
+          <span class="chip">Suno 6.0</span>
+          <span class="chip">KI-Musik</span>
+          <span class="chip">AI Musik</span>
+          <span class="chip">AI Songs</span>
+          <span class="chip">Suno Prompts</span>
+          <span class="chip">Suno Lyrics</span>
+          <span class="chip">Suno Styles</span>
+          <span class="chip">AI Songwriting</span>
+          <span class="chip">AI Music Solo Artist</span>
+          <span class="chip">Musikproduktion mit KI</span>
+          <span class="chip">Udio</span>
+          <span class="chip">Musikvideos</span>
+          <span class="chip">Independent Artists</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="highlight">
+          <div class="eyebrow">Dein nächster Schritt</div>
+          <h2>Zeig deine Musik. Teile deinen Sound.</h2>
+          <p>Auf AI Music Rebels kannst du ein kostenloses Künstlerprofil mit eigener Subdomain erstellen und deine Musik, Links und Videos an einem Ort präsentieren.</p>
+          <a class="button" href="https://aimusicrebels.com/register?next=/claim-subdomain">Jetzt kostenloses Profil sichern</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">Fragen &amp; Antworten</div>
+          <h2>Musikrebellen FAQ</h2>
+        </div>
+        <details>
+          <summary>Was ist Musikrebellen?</summary>
+          <p>Musikrebellen ist eine deutschsprachige AI-Musik-Community für Creator, Solo-Artists und Produzenten, die KI-Musik, AI Songs und neue Musikideen teilen möchten.</p>
+        </details>
+        <details>
+          <summary>Geht es bei Musikrebellen um Suno AI und Suno 6.0?</summary>
+          <p>Ja. Die Community tauscht sich über Suno AI, Suno 6.0, Suno Prompts, Lyrics, Styles, Songideen und Workflows für KI-Musik aus. Musikrebellen ist unabhängig und keine offizielle Suno-Seite.</p>
+        </details>
+        <details>
+          <summary>Kann ich meine AI Songs und Suno Musik teilen?</summary>
+          <p>Ja. Teile deine Songs, Releases, Cover, Musikvideos und Produktionsideen, hole dir Feedback und entdecke andere deutschsprachige AI-Musik-Solo-Artists.</p>
+        </details>
+        <details>
+          <summary>Welche Tools werden neben Suno unterstützt?</summary>
+          <p>Der Schwerpunkt liegt auf Suno AI und KI-Musik. Auch Projekte aus Udio und anderen AI-Music-Tools sind willkommen, solange sie in die Community passen.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>© 2026 Musikrebellen · Deutsche AI-Musik-Community</span>
+      <a href="https://aimusicrebels.com/">AI Music Rebels</a>
+    </div>
+  </footer>
+</body>
+</html>
