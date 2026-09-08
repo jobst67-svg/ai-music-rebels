@@ -17,9 +17,9 @@ export const metadata: Metadata = {
     description: "Create your free artist profile and share your music, links and videos in one place.",
     images: [
       {
-        url: "/ai-music-rebels-logo.webp",
-        width: 1500,
-        height: 1500,
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
         alt: "AI Music Rebels logo"
       }
     ]
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AI Music Rebels",
     description: "Create your free artist profile and share your music, links and videos in one place.",
-    images: ["/ai-music-rebels-logo.webp"]
+    images: ["/og-image.jpg"]
   }
 };
 
